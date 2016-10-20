@@ -254,86 +254,97 @@ def update_games(c, start_date, end_date):
                     # raise e
 
 def update_player(playerId):
-    c.execute('''SELECT EXISTS(SELECT 1 FROM players WHERE id = ?)''', (playerId,))
-    if c.fetchone()[0] >= 1:
+    # TODO: Check into any potential player updates
+    c.execute("SELECT EXISTS(SELECT 1 FROM players WHERE id = ?) playerExists", (playerId,))
+    if c.fetchone()['playerExists'] == 1:
         print("Skipping player ID: " + str(playerId))
     else:
-        url = 'https://statsapi.web.nhl.com/api/v1/people/' + str(playerId)
-        response = urllib.request.urlopen(url).read()
-        data = json.loads(response.decode())
-        print("Updating player ID: " + str(playerId))
-        for player in data['people']:
+        try:
+            print("Updating player ID: " + str(playerId))
+            url = 'https://statsapi.web.nhl.com/api/v1/people/' + str(playerId)
+            response = urllib.request.urlopen(url).read()
+            data = json.loads(response.decode())
 
-            # if "currentTeam" in player:
-            #     currentTeam = player['currentTeam']['id']
-            # else:
-            #     currentTeam = ""
+            for player in data['people']:
 
-            try:
-                playerList = [player['id'],
-                              player['fullName'],
-                              player['link'],
-                              player['firstName'],
-                              player['lastName'],
-                              #player['primaryNumber'],
-                              player['birthDate'],
-                              #player['currentAge'],
-                              player['birthCity'],
-                              #player['birthStateProvince'],
-                              player['birthCountry'],
-                              player['height'],
-                              player['weight'],
-                              player['active'],
-                              #player['alternateCaptain'],
-                              #player['captain'],
-                              player['rookie'],
-                              player['shootsCatches'],
-                              player['rosterStatus'],
-                              player['currentTeam']['id'],
-                              player['primaryPosition']['abbreviation']]
+                # if "currentTeam" in player:
+                #     currentTeam = player['currentTeam']['id']
+                # else:
+                #     currentTeam = ""
 
-                c.execute('''INSERT OR IGNORE INTO players
-                        (id,
-                        fullName,
-                        link,
-                        firstName,
-                        lastName,
-                        birthDate,
-                        birthCity,
-                        birthCountry,
-                        height,
-                        weight,
-                        active,
-                        rookie,
-                        shootsCatches,
-                        rosterStatus,
-                        currentTeamId,
-                        primaryPositionAbbr) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', playerList)
-            except Exception as e:
-                print("Could not insert the following player stats:")
-                print(player)
-                print("Got the following error:")
-                print(e)
-                # Roll back any change if something goes wrong
-                # db.rollback()
-                # raise e
+                try:
+                    playerList = [player['id'],
+                                  player['fullName'],
+                                  player['link'],
+                                  player['firstName'],
+                                  player['lastName'],
+                                  #player['primaryNumber'],
+                                  player['birthDate'],
+                                  #player['currentAge'],
+                                  player['birthCity'],
+                                  #player['birthStateProvince'],
+                                  player['birthCountry'],
+                                  player['height'],
+                                  player['weight'],
+                                  player['active'],
+                                  #player['alternateCaptain'],
+                                  #player['captain'],
+                                  player['rookie'],
+                                  player['shootsCatches'],
+                                  player['rosterStatus'],
+                                  player['currentTeam']['id'],
+                                  player['primaryPosition']['abbreviation']]
+
+                    c.execute('''INSERT OR IGNORE INTO players
+                            (id,
+                            fullName,
+                            link,
+                            firstName,
+                            lastName,
+                            birthDate,
+                            birthCity,
+                            birthCountry,
+                            height,
+                            weight,
+                            active,
+                            rookie,
+                            shootsCatches,
+                            rosterStatus,
+                            currentTeamId,
+                            primaryPositionAbbr) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', playerList)
+                except Exception as e:
+                    print("Could not insert the following player stats:")
+                    print(player)
+                    print("Got the following error:")
+                    print(e)
+                    # Roll back any change if something goes wrong
+                    # db.rollback()
+                    # raise e
+
+        except Exception as e:
+            print("Could not connect to player API:")
+            print("Got the following error:")
+            print(e)
+            # Roll back any change if something goes wrong
+            # db.rollback()
+            # raise e
 
 def update_players(c, update_date):
     # Create player stats data
     # Loop through all games in DB
-    c.execute('''SELECT DISTINCT playerId
+    c.execute('''SELECT DISTINCT gpss.playerId
                 FROM games g
                 LEFT JOIN games_players_skater_stats gpss ON g.gamePk = gpss.gamePk
-                WHERE gameDate > ?
+                WHERE g.gameDate > ?
 
                 UNION ALL
 
-                SELECT DISTINCT playerId
+                SELECT DISTINCT gpgs.playerId
                 FROM games g
                 LEFT JOIN games_players_goalie_stats gpgs ON g.gamePk = gpgs.gamePk
-                WHERE gameDate > ?''', (update_date,update_date))
+                WHERE g.gameDate > ?''', (update_date,update_date))
     for players in c.fetchall():
-        playerId = players[0]
+        playerId = players['playerId']
         update_player(playerId)
 
 def update_games_players_skaters_stats(c, update_date):
@@ -341,7 +352,7 @@ def update_games_players_skaters_stats(c, update_date):
     # Loop through all games in DB
     c.execute('''SELECT gamePk, awayTeamId, homeTeamId FROM games WHERE gameDate > ?''', (update_date,))
     for game in c.fetchall():
-        gamePk = game[0]
+        gamePk = game['gamePk']
         url = 'https://statsapi.web.nhl.com/api/v1/game/' + str(gamePk) + '/feed/live'
         response = urllib.request.urlopen(url).read()
         data = json.loads(response.decode())
@@ -476,7 +487,7 @@ def update_games_players_goalie_stats(c, update_date):
     # Loop through all games in DB
     c.execute('''SELECT gamePk, awayTeamId, homeTeamId FROM games WHERE gameDate > ?''', (update_date,))
     for game in c.fetchall():
-        gamePk = game[0]
+        gamePk = game['gamePk']
         url = 'https://statsapi.web.nhl.com/api/v1/game/' + str(gamePk) + '/feed/live'
         response = urllib.request.urlopen(url).read()
         data = json.loads(response.decode())
@@ -606,14 +617,15 @@ def update_games_draftkings_points(c, update_date):
     c.execute('''SELECT gpss.*
                 FROM games g
                 LEFT JOIN games_players_skater_stats gpss ON g.gamePk = gpss.gamePk
-                WHERE gameDate > ?''', (update_date,))
+                WHERE g.gameDate > ?''', (update_date,))
     for player_stats in c.fetchall():
-        gamePk = player_stats['gamePk']
-        playerId = player_stats['playerId']
-        points = player_stats["goals"] * 3 + player_stats["assists"] * 2 + player_stats["shots"] * 0.5 + player_stats["blocked"] * 0.5 + player_stats["shortHandedGoals"] + player_stats["shortHandedAssists"] #+ player_stats["Shootout"] * 0.2
-        if player_stats["goals"] >= 3:
-            points += 1.5
         try:
+            gamePk = player_stats['gamePk']
+            playerId = player_stats['playerId']
+            points = player_stats["goals"] * 3 + player_stats["assists"] * 2 + player_stats["shots"] * 0.5 + player_stats["blocked"] * 0.5 + player_stats["shortHandedGoals"] + player_stats["shortHandedAssists"] #+ player_stats["Shootout"] * 0.2
+            if player_stats["goals"] >= 3:
+                points += 1.5
+
             c.execute('''INSERT or REPLACE INTO games_draftkings_points
                      (gamePk,
                       playerId,
@@ -632,29 +644,30 @@ def update_games_draftkings_points(c, update_date):
     c.execute('''SELECT gpgs.*
                 FROM games g
                 LEFT JOIN games_players_goalie_stats gpgs ON g.gamePk = gpgs.gamePk
-                WHERE gameDate > ?''', (update_date,))
+                WHERE g.gameDate > ?''', (update_date,))
     for goalie_stats in c.fetchall():
-        gamePk = goalie_stats['gamePk']
-        playerId = goalie_stats['playerId']
-
-        goals_against = (goalie_stats["shots"] - goalie_stats["saves"])
-        points = goalie_stats["saves"] * 0.3 - goals_against + goalie_stats["goals"] * 3 + goalie_stats["assists"] * 2
-        if goalie_stats["decision"] == "W":
-            points += 3
-        if goals_against == 0:
-            # check time on ice as well, must be at least 60 minutes (3600 s)
-            min, seconds = [int(i) for i in goalie_stats["timeOnIce"].split(':')]
-            if (min * 60 + seconds) > 3600:
-                points += 2
-
         try:
+            gamePk = goalie_stats['gamePk']
+            playerId = goalie_stats['playerId']
+
+            goals_against = (goalie_stats["shots"] - goalie_stats["saves"])
+            points = goalie_stats["saves"] * 0.3 - goals_against + goalie_stats["goals"] * 3 + goalie_stats["assists"] * 2
+            if goalie_stats["decision"] == "W":
+                points += 3
+            if goals_against == 0:
+                # check time on ice as well, must be at least 60 minutes (3600 s)
+                min, seconds = [int(i) for i in goalie_stats["timeOnIce"].split(':')]
+                if (min * 60 + seconds) > 3600:
+                    points += 2
+
+
             c.execute('''INSERT or REPLACE INTO games_draftkings_points
                      (gamePk,
                       playerId,
                       points) VALUES(?,?,?)''', (gamePk,playerId,points))
 
         except Exception as e:
-            print("Could not insert the following player points for DraftKings:")
+            print("Could not insert the following goalie points for DraftKings:")
             print(goalie_stats)
             print("Got the following error:")
             print(e)
@@ -687,7 +700,7 @@ if __name__ == '__main__':
 
     # Update for previous week, will overwrite any data
     week_ago = datetime.date.today() - datetime.timedelta(days=7)
-    start_of_season = datetime.date(2015,10,7)
+    start_of_season = datetime.date(2016,10,12)
 
     update_games(c, week_ago, datetime.date.today())
     conn.commit()
