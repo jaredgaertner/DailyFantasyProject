@@ -626,6 +626,7 @@ def update_games_draftkings_points(c, update_date):
             if player_stats["goals"] >= 3:
                 points += 1.5
 
+            print("Updating player " + str(playerId) + " draftkings stats for game ID: " + str(gamePk))
             c.execute('''INSERT or REPLACE INTO games_draftkings_points
                      (gamePk,
                       playerId,
