@@ -1,10 +1,27 @@
 import csv
-import datetime
-import json
 import sqlite3
-import urllib.request
+import time
+import datetime
+import logging
+import random
 
 __author__ = "jaredg"
+
+# Configure logging
+logFormatter = logging.Formatter(
+    "%(asctime)s [%(threadName)s][%(levelname)s][%(filename)s:%(lineno)s - %(funcName)s()] %(message)s")
+rootLogger = logging.getLogger()
+
+fileHandler = logging.FileHandler("../resources/logs/lineup_builder.log." + time.strftime("%Y%m%d-%H%M%S"))
+fileHandler.setFormatter(logFormatter)
+# fileHandler.setLevel(logging.DEBUG)
+rootLogger.addHandler(fileHandler)
+
+consoleHandler = logging.StreamHandler()
+consoleHandler.setFormatter(logFormatter)
+# consoleHandler.setLevel(logging.INFO)
+rootLogger.addHandler(consoleHandler)
+rootLogger.setLevel(logging.INFO)
 
 
 def dict_factory(cursor, row):
@@ -31,178 +48,409 @@ def close(conn):
     conn.close()
 
 
-# Find up to max_size of players with maximum value to weight ratio
-def find_goalie_util_pair(players, max_set_size=50):
-    # print(item)
-
-    goalies = [item for item in players if item[3] == "G"]
-    set_of_players = []
-    for i in range(0, len(goalies) - 1):
-        for j in range(0, len(players) - 1):
-            if goalies[i] != players[j]:
-                player_pair = [[goalies[i][0], players[j][0]], goalies[i][1] + players[j][1],
-                               goalies[i][2] + players[j][2], "G,Util"]
-                set_of_players.append(player_pair)
-
-    # Take the max_size number of optimal value to weight ratio and the max_size number of highest value pairs
-    # print("Total number of " + set_of_players[0][3] + " pairs: " + str(len(set_of_players)))
-    sorted_set_of_players_optimal = sorted(set_of_players, key=lambda tup: tup[2] / tup[1], reverse=True)
-    sorted_set_of_players_highest_value = sorted(sorted_set_of_players_optimal[max_set_size:], key=lambda tup: tup[2],
-                                                 reverse=True)
-    return sorted_set_of_players_optimal[:max_set_size] + sorted_set_of_players_highest_value[:max_set_size]
-
-
 # Find up to max_size pairs of players with maximum value to weight ratio
-def find_player_pair(players, position, max_set_size=50):
-    # print(item)
-    players = [item for item in players if item[3] == position]
+def find_player_pair(players, position, max_set_size=200):
+    players = [item for item in players if item['position'] == position]
+    logging.debug("Number of " + position + " being used in pairs: " + str(len(players)))
     set_of_players = []
     for i in range(0, len(players) - 1):
         for j in range(i + 1, len(players) - 1):
-            player_pair = [[players[i][0], players[j][0]], players[i][1] + players[j][1], players[i][2] + players[j][2],
-                           position]
+            player_pair = {"nameAndId": [players[i]['nameAndId'], players[j]['nameAndId']],
+                           "weight": players[i]['weight'] + players[j]['weight'],
+                           "value": players[i]['value'] + players[j]['value'],
+                           "position": position}
             set_of_players.append(player_pair)
 
     # Take the max_size number of optimal value to weight ratio and the max_size number of highest value pairs of the rest left
-    # print("Total number of " + position + " pairs: " + str(len(set_of_players)))
-    sorted_set_of_players_optimal = sorted(set_of_players, key=lambda tup: tup[2] / tup[1], reverse=True)
-    sorted_set_of_players_highest_value = sorted(sorted_set_of_players_optimal[max_set_size:], key=lambda tup: tup[2],
-                                                 reverse=True)
-    return sorted_set_of_players_optimal[:max_set_size] + sorted_set_of_players_highest_value[:max_set_size]
+    logging.debug("Total number of " + position + " pairs: " + str(len(set_of_players)))
+    return set_of_players
+    # sorted_set_of_players_optimal = sorted(set_of_players, key=lambda tup: tup['value'] / tup['weight'], reverse=True)
+    # sorted_set_of_players_highest_value = sorted(sorted_set_of_players_optimal[max_set_size:], key=lambda tup: tup['value'],
+    #                                              reverse=True)
+    # return sorted_set_of_players_optimal[:max_set_size] + sorted_set_of_players_highest_value[:max_set_size]
 
 
-def find_player_triples(players, position, max_triple_set_size=2500):
-    players = [item for item in players if item[3] == position]
-
+def find_player_triples(players, position, max_triple_set_size=20000):
+    players = [item for item in players if item['position'] == position]
+    logging.debug("Number of " + position + " being used in triples: " + str(len(players)))
     set_of_players = []
     for i in range(0, len(players) - 1):
         for j in range(i + 1, len(players) - 1):
             for k in range(i + j + 1, len(players) - 1):
-                player_triple = [[players[i][0], players[j][0], players[k][0]],
-                                 players[i][1] + players[j][1] + players[k][1],
-                                 players[i][2] + players[j][2] + players[k][2], position]
+                player_triple = {
+                    "nameAndId": [players[i]['nameAndId'], players[j]['nameAndId'], players[k]['nameAndId']],
+                    "weight": players[i]['weight'] + players[j]['weight'] + players[k]['weight'],
+                    "value": players[i]['value'] + players[j]['value'] + players[k]['value'], "position": position}
                 set_of_players.append(player_triple)
 
     # Take the max_size number of optimal value to weight ratio and the max_size number of highest value triplets
-    # print("Total number of " + position + " triples: " + str(len(set_of_players)))
-    sorted_set_of_players_optimal = sorted(set_of_players, key=lambda tup: tup[2] / tup[1], reverse=True)
-    sorted_set_of_players_highest_value = sorted(sorted_set_of_players_optimal[max_triple_set_size:],
-                                                 key=lambda tup: tup[2], reverse=True)
-    return sorted_set_of_players_optimal[:max_triple_set_size] + sorted_set_of_players_highest_value[
-                                                                 :max_triple_set_size]
+    logging.debug("Total number of " + position + " triples: " + str(len(set_of_players)))
+    return set_of_players
+    # sorted_set_of_players_optimal = sorted(set_of_players, key=lambda tup: tup['value'] / tup['weight'], reverse=True)
+    # sorted_set_of_players_highest_value = sorted(sorted_set_of_players_optimal[max_triple_set_size:],
+    #                                              key=lambda tup: tup['value'], reverse=True)
+    # return sorted_set_of_players_optimal[:max_triple_set_size] + sorted_set_of_players_highest_value[
+    #                                                              :max_triple_set_size]
 
 
-# http://stackoverflow.com/questions/19389931/knapsack-constraint-python
-# def multi_choice_knapsack(players, limit):
-#     table = [[0 for w in range(limit + 1)] for j in xrange(len(players) + 1)]
-#     no_of_positions = {"W":1,"C":1,"D":1,"G":1}
-#     result = []
-#     for j in xrange(1, len(players) + 1):
-#         item, wt, val, position = players[j-1]
-#         totval, totwt = totalvalue(result, limit)
-#         if no_of_positions[position] > 0 and totwt + wt <= limit:
-#             result.append(players[j-1])
-#             no_of_positions[position] -= 1
-#     return result
+def get_player_value(playerId):
+    logging.debug("Getting player value for player ID:" + str(playerId))
 
-def get_player_value(name):
+    # Find average points for last week and for the year
+    c.execute('''select p.id,
+                        AVG(case when g.gamePk like '2016%' then gdp.points else null end) AS average_points_for_year,
+                        ifnull(AVG(case when g.gameDate > date('now','-7 day') then gdp.points else null end),0) AS average_points_for_week
+                 from games_draftkings_points gdp
+                 inner join players p
+                 on gdp.playerid = p.id
+                 inner join games g
+                 on gdp.gamePk = g.gamePk
+                 where (g.gamePk like '2016%' or
+                       g.gameDate > date('now','-7 day')) and
+                       p.id = ?
+                 group by p.id''', (playerId,))
+    value = 0
+    for player_stats in c.fetchall():
+        # Calculate value
+        value = 0.75 * player_stats['average_points_for_year'] + 0.25 * player_stats['average_points_for_week']
+        logging.debug("Got value of " + str(value))
+    return value
+
+            # # Adjust value based on opponent
+        # c.execute('''select p.id,
+        #                     ts.
+        #              from games_draftkings_points gdp
+        #              inner join players p
+        #              on gdp.playerid = p.id
+        #              inner join games g
+        #              on gdp.gamePk = g.gamePk
+        #              where p.id = ?''', (playerId,))
+        #
+        # for player_stats in c.fetchall():
+        #     # Calculate value
+        #     value *= goals_against_percentage
+        #     logging.debug("Got value of " + str(goals_against_percentage))
+
+    # except Exception as e:
+    #     logging.error("Could not find player points for DraftKings:")
+    #     logging.error("Got the following error:")
+    #     logging.error(e)
+    #     return 0
+
+
+def get_player_position(position):
+    if position in ["LW", "RW"]:
+        return "W"
+    else:
+        return position
+
+# def get_opponent(c, player_id, game_pk):
+#     try:
+#         c.execute('''select p.id
+#                      from players p
+#                      where p.fullName = ?''', (name,))
+#         for player in c.fetchall():
+#             return player['id']
+#
+#     except Exception as e:
+#         logging.error("Could not find player ID for " + name)
+#         logging.error("Got the following error:")
+#         logging.error(e)
+#         return 0
+
+# def get_opponent_by_game_info(game_info, team_abbrev):
+#     split_info = game_info.split()
+#     logging.info(split_info)
+#     teams = split_info[0].split(str="@")
+#     logging.info(teams)
+#     if teams[0].upper() != team_abbrev.upper():
+#         return teams[1].upper()
+#     else:
+#         return teams[0].upper()
+
+# def get_game_pk(c, player_id, current_date):
+#     try:
+#         c.execute('''select p.id
+#                      from players p
+#                      inner join games g
+#                      on p.id = g.
+#                      where p.id = ?''', (player_id,current_date,))
+#         for player in c.fetchall():
+#             return player['id']
+#
+#     except Exception as e:
+#         logging.error("Could not find gamePk for " + player_id + " on date " + str(current_date))
+#         logging.error("Got the following error:")
+#         logging.error(e)
+#         return 0
+
+def get_player_id(name):
     try:
-        c.execute('''select p.id, p.fullName,
-                          AVG(case when g.gamePk like '2016%' then gdp.points else null end) AS average_points_for_year,
-                          ifnull(AVG(case when g.gameDate > date('now','-7 day') then gdp.points else null end),0) AS average_points_for_week
-                    from games_draftkings_points gdp
-                    inner join players p
-                    on gdp.playerid = p.id
-                    inner join games g
-                    on gdp.gamePk = g.gamePk
-                    where (g.gamePk like '2016%' or
-                          g.gameDate > date('now','-7 day')) and
-                          p.fullName = ?
-                    group by p.id, p.fullName
-                    order by p.fullName''', (name,))
-        value = 0
-        for player_stats in c.fetchall():
-            value = 0.75 * player_stats['average_points_for_year'] + 0.25 * player_stats['average_points_for_week']
-
-        return value
+        c.execute('''select p.id
+                     from players p
+                     where p.fullName = ?''', (name,))
+        for player in c.fetchall():
+            return player['id']
 
     except Exception as e:
-        print("Could not find player points for DraftKings:")
-        print(player_stats)
-        print("Got the following error:")
-        print(e)
+        logging.error("Could not find player ID for " + name)
+        logging.error("Got the following error:")
+        logging.error(e)
         return 0
 
 
-# def totalvalue(comb, limit):
-#     ' Totalise a particular combination of players'
-#     totwt = totval = 0
-#     for item, wt, val, position in comb:
-#         totwt  += wt
-#         totval += val
-#     return (totval, totwt)
+def get_player_id_by_name_and_draftkings_id(nameAndId):
+    try:
+        c.execute('''select pdi.playerId
+                     from player_draftkings_info pdi
+                     where pdi.nameAndId = ?''', (nameAndId,))
+        for player in c.fetchall():
+            return player['playerId']
 
-def knapsack01_dp(player_set, limit):
-    table = [[0 for w in range(limit + 1)] for j in range(len(player_set) + 1)]
-
-    print("Knapsack: Going through all " + str(len(player_set)) + " sets of players.")
-    for j in range(1, len(player_set) + 1):
-        item, wt, val, position = player_set[j - 1]
-        # print("Item: " + str(item) + ", wt: " + str(wt) + ", val: " + str(val) + ", position: " + str(position))
-        if j % 1000 == 0:
-            print("Knapsack: Through " + str(j) + " of " + str(len(player_set)) + " items.")
-
-        for w in range(1, limit + 1):
-            if wt > w:
-                table[j][w] = table[j - 1][w]
-            else:
-                table[j][w] = max(table[j - 1][w],
-                                  table[j - 1][w - wt] + val)
-
-    result = []
-    w = limit
-    for j in range(len(player_set), 0, -1):
-        was_added = table[j][w] != table[j - 1][w]
-
-        if was_added:
-            item, wt, val, position = player_set[j - 1]
-            result.append(player_set[j - 1])
-            w -= wt
-
-    return result
+    except Exception as e:
+        logging.error("Could not find player ID for " + nameAndId)
+        logging.error("Got the following error:")
+        logging.error(e)
+        return 0
 
 
-def multi_choice_knapsack(players, goalie, player_set, limit):
-    positions = ["G", "D", "C", "W", "Util"]
+def get_lineup_value(lineup):
+    logging.debug("Getting lineup value")
+    logging.debug(lineup)
+    try:
+        total_value = 0
+        for playerId in lineup:
+            total_value += get_player_value(playerId)
+        return total_value
+
+    except Exception as e:
+        logging.error("Could not get lineup value")
+        logging.error(lineup)
+        logging.error("Got the following error:")
+        logging.error(e)
+        return 0
+
+
+def insert_player_data(player_info):
+    logging.debug("Inserting player information for DraftKings for " + str(player_info['name']))
+    try:
+        player_info_list = [player_info['id'],
+                            player_info['name'],
+                            player_info['nameAndId'],
+                            player_info['playerId'],
+                            player_info['weight'],
+                            player_info['value'],
+                            player_info['position'],
+                            player_info['gameInfo'],
+                            player_info['teamAbbrev'],
+                            player_info['gameDate'],
+                            player_info['draftType']]
+
+        c.execute('''INSERT OR IGNORE INTO player_draftkings_info
+                (id,
+                 name,
+                 nameAndId,
+                 playerId,
+                 weight,
+                 value,
+                 position,
+                 gameInfo,
+                 teamAbbrev,
+                 gameDate,
+                 draftType) VALUES(?,?,?,?,?,?,?,?,?,?,?)''', player_info_list)
+
+    except Exception as e:
+        logging.error("Could not insert player info for DraftKings:")
+        logging.error(player_info)
+        logging.error("Got the following error:")
+        logging.error(e)
+        # Roll back any change if something goes wrong
+        # db.rollback()
+        # raise e
+
+
+def insert_all_lineups(c, all_lineups, current_date):
+    logging.debug("Inserting all player lineups for DraftKings")
+    logging.debug(all_lineups)
+
+    try:
+        for lineup in all_lineups:
+            # Convert lineup to player IDs
+            lineupWithPlayerId = []
+            lineupWithPlayerId.append(get_player_id_by_name_and_draftkings_id(lineup[0]))
+            lineupWithPlayerId.append(get_player_id_by_name_and_draftkings_id(lineup[1]))
+            lineupWithPlayerId.append(get_player_id_by_name_and_draftkings_id(lineup[2]))
+            lineupWithPlayerId.append(get_player_id_by_name_and_draftkings_id(lineup[3]))
+            lineupWithPlayerId.append(get_player_id_by_name_and_draftkings_id(lineup[4]))
+            lineupWithPlayerId.append(get_player_id_by_name_and_draftkings_id(lineup[5]))
+            lineupWithPlayerId.append(get_player_id_by_name_and_draftkings_id(lineup[6]))
+            lineupWithPlayerId.append(get_player_id_by_name_and_draftkings_id(lineup[7]))
+            lineupWithPlayerId.append(get_player_id_by_name_and_draftkings_id(lineup[8]))
+            total_weight = lineup[9]
+            adjusted_total_value = lineup[10]
+            logging.debug(lineupWithPlayerId)
+
+            # Get the actual total value, as the value in the lineup is adjusted
+            total_value = get_lineup_value(lineupWithPlayerId)
+            logging.debug("Initial total value: " + str(total_value))
+            logging.debug("Adjusted total value: " + str(adjusted_total_value))
+
+            # Insert the lineup
+            all_lineups_list = [current_date,
+                                lineupWithPlayerId[0],
+                                lineupWithPlayerId[1],
+                                lineupWithPlayerId[2],
+                                lineupWithPlayerId[3],
+                                lineupWithPlayerId[4],
+                                lineupWithPlayerId[5],
+                                lineupWithPlayerId[6],
+                                lineupWithPlayerId[7],
+                                lineupWithPlayerId[8],
+                                total_weight,
+                                total_value]
+            logging.debug(all_lineups_list)
+            c.execute('''INSERT OR IGNORE INTO daily_draftkings_lineups
+                         (gameDate,
+                          centre1,
+                          centre2,
+                          winger1,
+                          winger2,
+                          winger3,
+                          defence1,
+                          defence2,
+                          goalie,
+                          util,
+                          totalWeight,
+                          totalValue) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)''', all_lineups_list)
+
+    except Exception as e:
+        logging.error("Could not insert all lineups for DraftKings:")
+        logging.error(all_lineups)
+        logging.error("Got the following error:")
+        logging.error(e)
+
+
+        # Roll back any change if something goes wrong
+        # db.rollback()
+        # raise e
+
+
+def get_player_data(c, current_date):
+    players = []
+
+    # Check if data already exists in database
+    c.execute("select exists(select 1 from player_draftkings_info where gameDate = ?) playerInfoExists",
+              (current_date,))
+    if c.fetchone()['playerInfoExists'] == 1:
+        logging.info("Player information for DraftKings already exists, grabbing from database.")
+        try:
+            c.execute('''select pdi.id,
+                                pdi.name,
+                                pdi.nameAndId,
+                                pdi.playerId,
+                                pdi.weight,
+                                pdi.value,
+                                pdi.position,
+                                pdi.gameInfo,
+                                pdi.opponent,
+                                pdi.gamePk,
+                                pdi.teamAbbrev,
+                                pdi.gameDate,
+                                pdi.draftType
+                        from player_draftkings_info pdi
+                        where pdi.gameDate = ?''', (current_date,))
+            for player_info in c.fetchall():
+                players.append(player_info)
+            return players
+
+        except Exception as e:
+            logging.error("Could not find player info for DraftKings:")
+            logging.error(player_info)
+            logging.error("Got the following error:")
+            logging.error(e)
+            return 0
+
+    # Doesn't, so check from file
+    else:
+        logging.info("Player information for DraftKings doesn't exist, grabbing from csv file.")
+        with open("../resources/DKSalaries_" + current_date.strftime("%d%b%Y").upper() + ".csv", "r") as csvfile:
+            # Skip the first 7 lines, as it contains the format for uploading
+            for i in range(7):
+                next(csvfile)
+
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                name = row[' Name']
+                player_id = get_player_id(name)
+                value = get_player_value(player_id)
+                game_info = row['GameInfo']
+                team_abbrev = row['TeamAbbrev ']
+                # game_pk = get_game_pk(c, player_id, current_date)
+                player_info = {"id": row[' ID'],
+                               "name": name,
+                               "nameAndId": row['Name + ID'],
+                               "playerId": player_id,
+                               "weight": int(int(row[' Salary']) / 100),
+                               "value": value,
+                               "position": get_player_position(row['Position']),
+                               "gameInfo": game_info,
+                               # "opponent": get_opponent_by_game_info(game_info, team_abbrev),
+                               # "gamePk": game_pk,
+                               "teamAbbrev": team_abbrev,
+                               "gameDate": current_date,
+                               "draftType": "Standard"}
+                logging.debug(player_info)
+                # player_info = [name_id, weight, value, position]
+                players.append(player_info)
+                insert_player_data(player_info)
+                logging.debug(player_info)
+
+            csvfile.close()
+            return players
+
+# http://stackoverflow.com/questions/19389931/knapsack-constraint-python
+def multi_choice_knapsack(goalie, util, defensemen, centres, wingers, limit):
+    # Remove chosen G and W from limit
+    limit -= (goalie['weight'] + util['weight'])
+    logging.debug("New limit, after removing chosen G is: " + str(limit))
+
+    # Run multiple-choice knapsack on the pairs of D, C, W, and any skaters for the Util position
+    positions = ["C", "W", "D"]
     table = [[0 for w in range(limit + 1)] for j in range(len(positions) + 1)]
     player_added = [[0 for w in range(limit + 1)] for j in range(len(positions) + 1)]
-    print("Knapsack: Going through all " + str(len(positions)) + " positions.")
-    result = set()
+    logging.debug("Knapsack: Going through all " + str(len(positions)) + " positions.")
     for i in range(1, len(positions) + 1):
-        # item, wt, val, position = player_set[j-1]
-        # print("Item: " + str(item) + ", wt: " + str(wt) + ", val: " + str(val) + ", position: " + str(position))
-        print("Multiple Choice Knapsack: Checking position " + str(positions[i - 1]))
-        if positions[i - 1] == "Util":
-            current_player_set = [item for item in players if item[3] != "G"]
-        elif positions[i - 1] == "G":
-            current_player_set = [goalie]
+        logging.debug("Multiple Choice Knapsack: Checking position " + str(positions[i - 1]))
+        if positions[i - 1] == "W":
+            current_player_set = wingers
+        elif positions[i - 1] == "D":
+            current_player_set = defensemen
+        elif positions[i - 1] == "C":
+            current_player_set = centres
         else:
-            current_player_set = [item for item in player_set if item[3] == positions[i - 1]]
+            logging.error("Unknown position!")
 
         for w in range(1, limit + 1):
             max_val_for_position = table[i - 1][w]
             for player in current_player_set:
-                # find the max for all player_set of that position
-                item, wt, val, position = player
-                # print("Item: " + str(item) + ", wt: " + str(wt) + ", val: " + str(val) + ", position: " + str(position))
-                if wt <= w and table[i - 1][w - wt] + val > max_val_for_position:
-                    max_val_for_position = table[i - 1][w - wt] + val
+                # Find the max for all player_set of that position
+                weight = player['weight']
+                nameAndId = player['nameAndId']
+                value = player['value']
+                position = player['position']
+
+                if weight <= w and table[i - 1][w - weight] + value > max_val_for_position:
+                    max_val_for_position = table[i - 1][w - weight] + value
                     player_added[i][w] = player
+                    logging.debug(
+                        "Adding player at (" + str(i) + "," + str(w) + "): " + str(nameAndId) + ", wt: " + str(
+                            weight) + ", val: " + str(value) + ", position: " + str(
+                            position))
             table[i][w] = max_val_for_position
 
     result = []
     w = limit
-    # print(table[i][w])
+    logging.debug(table[2][w])
     total_value = 0
     total_weight = 0
     for i in range(len(positions), 0, -1):
@@ -210,109 +458,107 @@ def multi_choice_knapsack(players, goalie, player_set, limit):
             was_added = table[i][j - 1] != table[i][j]
 
             if was_added:
-                item, wt, val, position = player_added[i][j]
+                logging.debug(player_added[i][j])
+                weight = player_added[i][j]['weight']
+                value = player_added[i][j]['value']
+
                 result.append(player_added[i][j])
-                total_value += val
-                total_weight += wt
-                w -= wt
-                break;
+                total_value += value
+                total_weight += weight
+                w -= weight
+                break
 
-                # Check change in value for each position added, find player with similar values
-                # value_added = table[i][w] - table[i - 1][w]
-                # players_added = [item for item in players if item[2] == value_added]
-                # print(players_added)
-                # result.append(players_added)
-
-    print(total_value)
-    print(total_weight)
-    # print(result)
-    return result
-
-
-def knapsack(players, goalie, limit, max_util_size=200, max_set_size=20, max_triple_set_size=2500):
-    # Only take the best max_goalies_size goalies, based on weight to value ratio
-    # goalies = [item for item in players if item[3] == "G"]
-    # goalies = sorted(goalies, key=lambda tup: tup[2]/tup[1], reverse=True)
-    # goalies = goalies[:max_goalies_size]
-
-    utils = [item for item in players if item[3] != "G"]
-    utils = sorted(utils, key=lambda tup: tup[2] / tup[1], reverse=True)
-    utils = utils[:max_util_size]
-
-    defensemen = find_player_pair(players, "D", max_set_size)
-    centres = find_player_pair(players, "C", max_set_size)
-    wingers = find_player_triples(players, "W", max_triple_set_size)
-
-    # print("Number of G being checked: " + str(len(goalies)))
-    # print("Number of Util being checked: " + str(len(utils)))
-    # print("Number of D pairs being checked: " + str(len(defensemen)))
-    # print("Number of C pairs being checked: " + str(len(centres)))
-    # print("Number of W pairs being checked: " + str(len(wingers)))
-
-    # Create sets of objects, include pairs and triples, and pass into a knapsack solver
-    player_set = utils  # goalies
-    # for util in utils:
-    #     player_set.append(util)
-
-    for defensemen_pair in defensemen:
-        player_set.append(defensemen_pair)
-
-    for centre_pair in centres:
-        player_set.append(centre_pair)
-
-    for winger_triple in wingers:
-        player_set.append(winger_triple)
-
-    player_set = sorted(player_set, key=lambda tup: tup[2] / tup[1], reverse=True)
-    # print(player_set)
-    return multi_choice_knapsack(players, goalie, player_set, limit)
+    # Adding players names to a set of players, results added in reverse order (Util, D, W, C)
+    logging.debug(result)
+    total_weight += goalie['weight'] + util['weight']
+    total_value += goalie['value'] + util['value']
+    logging.debug(total_value)
+    full_set = [result[2]['nameAndId'][0],
+                result[2]['nameAndId'][1],
+                result[1]['nameAndId'][0],
+                result[1]['nameAndId'][1],
+                result[1]['nameAndId'][2],
+                result[0]['nameAndId'][0],
+                result[0]['nameAndId'][1],
+                goalie['nameAndId'],
+                util['nameAndId'],
+                total_weight,
+                total_value]
+    set_of_players = []
+    set_of_players.append(full_set)
+    logging.debug(set_of_players)
+    return set_of_players
 
 
-def brute_force(players, goalie, util, limit, max_set_size=20, max_triple_set_size=2500):
-    defensemen = find_player_pair(players, "D", max_set_size)
-    centres = find_player_pair(players, "C", max_set_size)
-    wingers = find_player_triples(players, "W", max_triple_set_size)
+def knapsack(skaters, goalie, util, limit, max_set_size=2000, max_triple_set_size=400000):
+    defensemen = find_player_pair(skaters, "D", max_set_size)
+    centres = find_player_pair(skaters, "C", max_set_size)
+    wingers = find_player_triples(skaters, "W", max_triple_set_size)
 
-    # print("Number of G being checked: " + str(len(goalies)))
-    # print("Number of Util being checked: " + str(len(utils)))
-    # print("Number of D pairs being checked: " + str(len(defensemen)))
-    # print("Number of C pairs being checked: " + str(len(centres)))
-    # print("Number of W pairs being checked: " + str(len(wingers)))
+    logging.debug("Number of D pairs being checked: " + str(len(defensemen)))
+    logging.debug("Number of C pairs being checked: " + str(len(centres)))
+    logging.debug("Number of W pairs being checked: " + str(len(wingers)))
+
+    return multi_choice_knapsack(goalie, util, defensemen, centres, wingers, limit)
+
+
+def brute_force(skaters, goalie, util, limit, max_set_size=2000):
+    defensemen = find_player_pair(skaters, "D", max_set_size)
+    centres = find_player_pair(skaters, "C", max_set_size)
+    wingers = find_player_triples(skaters, "W", max_set_size)
+
+    logging.info("Number of D pairs being checked: " + str(len(defensemen)))
+    logging.info("Number of C pairs being checked: " + str(len(centres)))
+    logging.info("Number of W pairs being checked: " + str(len(wingers)))
 
     set_of_players = []
     index = 0
 
-    # print("Potential number of combinations: " + str(len(centres)*len(defensemen)*len(wingers)))#*len(utils)))
+    logging.info(
+        "Potential number of combinations: " + str(len(centres) * len(defensemen) * len(wingers)))
     # for i in range(0, len(goalies)-1):
-    for j in range(0, len(centres) - 1):
-        for k in range(0, len(defensemen) - 1):
-            for l in range(0, len(wingers) - 1):
-                # for m in range(0, len(utils)-1):
-                # if utils[m][0] not in centres[j][0] and utils[m][0] not in defensemen[k][0] and utils[m][0] not in wingers[l][0]:
-                weight = goalie[1] + centres[j][1] + defensemen[k][1] + wingers[l][1] + util[1]
-                value = goalie[2] + centres[j][2] + defensemen[k][2] + wingers[l][2] + util[2]
+    for j in range(len(centres)):
+        for k in range(len(defensemen)):
+            for l in range(len(wingers)):
+                # for m in range(len(skaters)):
+                #     if skaters[m]['nameAndId'] not in centres[j]['nameAndId'] and skaters[m]['nameAndId'] not in defensemen[k]['nameAndId'] and skaters[m][
+                #         0] not in wingers[l]['nameAndId'] and skaters[m]['nameAndId'] != winger['nameAndId']:
+                weight = goalie['weight'] + centres[j]['weight'] + defensemen[k]['weight'] + wingers[l]['weight'] + \
+                         util['weight']
+                value = goalie['value'] + centres[j]['value'] + defensemen[k]['value'] + wingers[l]['value'] + util[
+                    'value']
                 index += 1
-                # if index % 10000000 == 0:
-                #     print("Number of sets checked: " + str(index))
 
                 if index % 10000 == 0:
                     # Only keep the top 100 sets of players
-                    set_of_players = sorted(set_of_players, key=lambda tup: tup[2], reverse=True)
+                    set_of_players = sorted(set_of_players, key=lambda tup: tup[10], reverse=True)
                     set_of_players = set_of_players[:10]
 
+                if index % 10000000 == 0:
+                    logging.info("Number of sets checked: " + str(index) + ", top set:")
+                    logging.info(set_of_players[0])
+
                 if weight <= limit:
-                    full_set = [centres[j][0][0], centres[j][0][1],
-                                wingers[l][0][0], wingers[l][0][1], wingers[l][0][2], defensemen[k][0][0],
-                                defensemen[k][0][1], goalie[0], util[0], weight, value]
+                    full_set = [centres[j]['nameAndId'][0],
+                                centres[j]['nameAndId'][1],
+                                wingers[l]['nameAndId'][0],
+                                wingers[l]['nameAndId'][1],
+                                wingers[l]['nameAndId'][2],
+                                defensemen[k]['nameAndId'][0],
+                                defensemen[k]['nameAndId'][1],
+                                goalie['nameAndId'],
+                                util['nameAndId'],
+                                weight,
+                                value]
                     set_of_players.append(full_set)
 
-    # print("Number of sets checked: " + str(index))
+    logging.debug("Number of sets checked: " + str(index))
     return set_of_players
 
 
-def calculate_set_of_players(players, goalie, util, limit):
-    return brute_force(players, goalie, util, limit)  # , 100, 4000)
-    # return knapsack(players, goalies[0], limit)
+def calculate_set_of_players(skaters, goalie, util, limit):
+    # return brute_force(skaters, goalie, util, limit)  # , 100, 4000)
+    return knapsack(skaters, goalie, util, limit)
 
 
 if __name__ == '__main__':
@@ -322,69 +568,107 @@ if __name__ == '__main__':
     # Need to turn on foreign keys, not on by default
     c.execute('''PRAGMA foreign_keys = ON''')
 
-    # Set players with ID based on player_values
-    print("Setting up players with ID and values....")
-    players = []
-    limit = 500
-    with open("../resources/DKSalaries.csv", "r") as csvfile:
-        # Skip the first 7 lines, as it contains the format for uploading
-        for i in range(7):
-            next(csvfile)
+    logging.debug("Hardcoding date and goalies for the lineup....")
+    date_for_lineup = datetime.date.today()# - datetime.timedelta(days=1)
+    chosen_goalies = ["Jaroslav Halak (7724121)", "Tuukka Rask (7724113)"]#, "Ben Bishop (7724127)", "Roberto Luongo (7724126)"]
 
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            # print(row)
-            name = row[' Name']
-            name_id = row['Name + ID']
-            weight = int(int(row[' Salary']) / 100)
-            value = get_player_value(name)
-            position = row['Position'] if row['Position'] != "LW" and row['Position'] != "RW" else "W"
-            item = [name_id, weight, value, position]
-            players.append(item)
-            # print(item)
-
-    # Create lineups for all combinations of top five goalies and top five players
-    print("Starting creating lineups....")
-    unused_players = players
-    final_lineups = []
-    for i in range(2):
-        unused_players = players
-        sorted_set_of_players = []
-        for j in range(2):
-            # Sort the players
-            unused_players = sorted(unused_players, key=lambda tup: tup[2] / tup[1], reverse=True)
-
-            # Pick a goalie and a Util (using costliest players, can do it based on value / cost ratio by using
-            # tup[2] / tup[1] as done with unused_players above
-            goalies = [item for item in unused_players if item[3] == "G"]
-            goalies = sorted(goalies, key=lambda tup: tup[1], reverse=True)
-            # goalies = goalies[:max_goalies_size]
-
-            utils = [item for item in unused_players if item[3] != "G"]
-            utils = sorted(utils, key=lambda tup: tup[1], reverse=True)
-            # utils = utils[:max_util_size]
-
-            # Remove Util from unused_players (will be returned after one full loop)
-            unused_players = [item for item in unused_players if item[0] != utils[0][0]]
-
-            print("Getting lineup with " + goalies[0][0] + " as goalie, and " + utils[0][0] + " as Util.")
-            calculated_set_of_players = calculate_set_of_players(unused_players[:400], goalies[0], utils[0], limit)
-            # sorted_set_of_players = sorted(calculated_set_of_players, key=lambda tup: tup[2], reverse=True)
-            for s in range(0, min(len(calculated_set_of_players) - 1, 10)):
-                # print(sorted_set_of_players[s])
-                final_lineups.append(calculated_set_of_players[s])
-
-        # Remove goalie from players
-        players = [item for item in players if item[0] != goalies[0][0]]
-
-    # Sort final lineups and print
-    final_lineups = sorted(final_lineups, key=lambda tup: tup[10], reverse=True)
-    for s in range(0, len(final_lineups) - 1):
-        print(final_lineups[s])
-
+    # Create lineups for all combinations of top goalies (or chosen goalies) and top value/cost players
     # Write top lineups to file
     with open("../resources/DKLineup.csv", "w") as csvfile:
         writer = csv.writer(csvfile, lineterminator='\n')
         writer.writerow(["C", "C", "W", "W", "W", "D", "D", "G", "UTIL"])
-        for s in range(min(len(final_lineups), 5)):
-            writer.writerow(final_lineups[s][:9])
+
+        logging.debug("Starting creating lineups....")
+        final_lineups = []
+        all_lineups = []
+
+        logging.debug("Setting up players with ID and values....")
+        players = get_player_data(c, date_for_lineup)
+        conn.commit()
+        unused_players = players
+        limit = 500
+        for i in range(len(chosen_goalies)):
+            # for i in range(20):
+            skaters = players
+            # sorted_set_of_players = []
+            for j in range(5):
+                # Sort the players
+                # skaters = sorted(skaters, key=lambda tup: tup['value'], reverse=True)
+
+                # Pick a goalie and a Util (using costliest players, can do it based on value / cost ratio by using
+                # tup['value'] / tup['weight'] as done with unused_players above
+                # goalies = [item for item in unused_players if item['position'] == "G"]
+
+                # Find the top goalies
+                # goalies = sorted(goalies, key=lambda tup: tup['weight'], reverse=True)
+
+                # Find the chosen goalies
+                chosen_goalie = [item for item in unused_players if item['nameAndId'] == chosen_goalies[i]][0]
+                # chosen_goalie = goalies[0]
+                # del goalies[0]
+
+                # Sort list of players and remove any goalies and players with value less than 1.5
+                # Choose one Util from the from of the list
+                skaters = [item for item in skaters if item['position'] != "G" and item['value'] > 1.5]
+                skaters = sorted(skaters, key=lambda tup: tup['value'] / tup['weight'], reverse=True)
+                chosen_util = skaters[0]
+
+                # Remove Util from skaters (will be returned after one full loop)
+                skaters = [item for item in skaters if item['nameAndId'] != chosen_util['nameAndId']]
+
+                # Add random noise in order to get varied results
+                # unused_players_with_noise = unused_players
+                # for player in unused_players:
+                #     player['value'] += random.uniform(-0.5, 0.5)
+
+                # Re-sort the players, remove goalies
+                # unused_players_with_noise = unused_players
+                # unused_players_with_noise = sorted(unused_players_with_noise,
+                #                                    key=lambda tup: tup['value'] / tup['weight'],
+                #                                    reverse=True)
+                # unused_players_with_noise = [item for item in unused_players if item['position'] != "G"]
+
+                # skaters = [item for item in unused_players if item['position'] != "G"]
+                logging.info("Getting lineup with " + chosen_goalie['nameAndId'] + " as goalie, and " + chosen_util[
+                    'nameAndId'] + " as Util.")
+
+                calculated_set_of_players = calculate_set_of_players(skaters, chosen_goalie, chosen_util, limit)
+                calculated_set_of_players = sorted(calculated_set_of_players, key=lambda tup: tup[10], reverse=True)
+                logging.debug(calculated_set_of_players[0])
+
+                # Lower value of non-chosen players in selected set (C,W,D), as they've already been selected
+                for player in skaters:
+                    if player['nameAndId'] in calculated_set_of_players[0] and player['position'] in ["C", "W", "D"]:
+                        logging.debug("Lowering value of " + str(player['nameAndId']) + " by 0.5.")
+                        player['value'] -= 0.25
+
+                # Write top lineup to csv
+                writer.writerow(calculated_set_of_players[0][:9])
+                csvfile.flush()
+
+                # Add found lineup to all lineups
+                all_lineups.append(calculated_set_of_players[0])
+                # for s in range(len(calculated_set_of_players)):
+                #    all_lineups.append(calculated_set_of_players[s])
+
+            # Remove goalie from players
+            players = [item for item in players if item['nameAndId'] != chosen_goalie['nameAndId']]
+
+        csvfile.close()
+
+    # Sort final lineups and print
+    all_lineups = sorted(all_lineups, key=lambda tup: tup[10], reverse=True)
+    for s in range(len(all_lineups)):
+        logging.info(all_lineups[s])
+
+    # Write all lineups to database
+    insert_all_lineups(c, all_lineups, date_for_lineup)
+    conn.commit()
+
+    with open("../resources/DKAllLineups.csv", "w") as csvfile:
+        writer = csv.writer(csvfile, lineterminator='\n')
+        writer.writerow(["C", "C", "W", "W", "W", "D", "D", "G", "UTIL", "Weight", "Value"])
+        for s in range(len(all_lineups)):
+            writer.writerow(all_lineups[s])
+
+        csvfile.close()
