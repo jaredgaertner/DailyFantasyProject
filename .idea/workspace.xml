@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BookmarkManager">
+    <bookmark url="file://$PROJECT_DIR$/daily_fantasy_hockey/load_game_data.py" description="    # c.execute(&quot;SELECT EXISTS(SELECT 1 FROM playe..." line="452" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="6ee810e2-4e20-4388-9fd4-7476674dac01" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/lineup_statistics.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/DKSalaries_06NOV2016.csv" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/DKSalaries.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/Yahoo_DF_player_export.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/Yahoo_DF_player_export_20160113.csv" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/daily_fantasy_hockey_db.sqlite" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/daily_fantasy_hockey_db.sqlite" />
+    <list default="true" id="6ee810e2-4e20-4388-9fd4-7476674dac01" name="Default" comment="Switching most data to python classes and splitting out into separate files.  Adding entry system, for adjusting lineups after submitting.">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/calculate_sets_of_players.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/database.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/entry.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/entry_builder.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/lineup.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/player.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/player_draftkings_info.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/DKSalaries_07NOV2016.csv" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/DKEntries.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/DKLineup.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/DKSalaries_03MAY2016.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/DKSalaries_05MAY2016.csv" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/daily_fantasy_hockey_db.sqlite" afterPath="$PROJECT_DIR$/resources/sql/daily_fantasy_hockey_db.sqlite" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/draftkings_points_by_game.sql" afterPath="$PROJECT_DIR$/resources/sql/draftkings_points_by_game.sql" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/lineup_builder.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/lineup_builder.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/lineup_statistics.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/lineup_statistics.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/load_game_data.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/load_game_data.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/DKLineup.csv" afterPath="$PROJECT_DIR$/resources/DKLineup.csv" />
     </list>
     <ignored path="DailyFantasyProject.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -31,11 +42,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="lineup_builder.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/lineup_builder.py">
+      <file leaf-file-name="entry_builder.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/entry_builder.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="7531">
-              <caret line="443" column="47" selection-start-line="443" selection-start-column="47" selection-end-line="443" selection-end-column="47" />
+            <state relative-caret-position="239">
+              <caret line="155" column="35" selection-start-line="155" selection-start-column="35" selection-end-line="155" selection-end-column="35" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -43,14 +54,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="lineup_statistics.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/lineup_statistics.py">
+      <file leaf-file-name="load_game_data.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/load_game_data.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="169">
-              <caret line="139" column="53" selection-start-line="139" selection-start-column="53" selection-end-line="139" selection-end-column="53" />
-              <folding>
-                <element signature="e#0#14#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="132">
+              <caret line="788" column="18" selection-start-line="788" selection-start-column="18" selection-end-line="788" selection-end-column="18" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -81,9 +90,26 @@
         <option value="$PROJECT_DIR$/resources/logs/lineup_builder.log.20161105-223750" />
         <option value="$PROJECT_DIR$/resources/logs/lineup_builder.log.20161105-224216" />
         <option value="$PROJECT_DIR$/resources/DKLineup.csv" />
-        <option value="$PROJECT_DIR$/daily_fantasy_hockey/load_game_data.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/sets_of_players_builder.py" />
+        <option value="$PROJECT_DIR$/resources/lineups/DKLineup_20161108-013731.csv" />
+        <option value="$PROJECT_DIR$/resources/lineups/DKLineup_20161108-021635.csv" />
+        <option value="$PROJECT_DIR$/resources/lineups/DKLineup_20161108-015217.csv" />
+        <option value="$PROJECT_DIR$/resources/lineups/DKLineup_20161108-032703.csv" />
+        <option value="$PROJECT_DIR$/resources/lineups/DKLineup_20161108-033352.csv" />
+        <option value="$PROJECT_DIR$/resources/lineups/DKLineup_20161108-133243.csv" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/player_stats.py" />
         <option value="$PROJECT_DIR$/daily_fantasy_hockey/lineup_statistics.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/player.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/calculate_sets_of_players.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/player_draftkings_info.py" />
         <option value="$PROJECT_DIR$/daily_fantasy_hockey/lineup_builder.py" />
+        <option value="$PROJECT_DIR$/resources/DKSalaries_09NOV2016.csv" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/draftking_entries.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/database.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/lineup.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/load_game_data.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/entry.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/entry_builder.py" />
       </list>
     </option>
   </component>
@@ -135,6 +161,7 @@
     </navigator>
     <panes>
       <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -181,7 +208,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="logs" />
+              <option name="myItemId" value="lineups" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -201,40 +228,23 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$USER_HOME$/AppData/Local/Programs/Python/Python35-32/python.exe" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/resources/sql" />
     <property name="settings.editor.selected.configurable" value="Errors" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Jared\Documents\DailyFantasyProject\resources\sql" />
+      <recent name="C:\Users\jared_000\PycharmProjects\DailyFantasyProject\bhp\scripts\nhl_updates" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Jared\Documents\DailyFantasyProject\daily_fantasy_hockey" />
     </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\jared_000\PycharmProjects\DailyFantasyProject\bhp\scripts\nhl_updates" />
-    </key>
   </component>
-  <component name="RunManager" selected="Python.lineup_builder">
-    <configuration default="false" name="yahoo_player_stats" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="DailyFantasyProject" />
-      <option name="SCRIPT_NAME" value="C:\Users\jared_000\PycharmProjects\DailyFantasyProject\src\lineup_builder.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
+  <component name="RunManager" selected="Python.entry_builder">
     <configuration default="false" name="nightly_update" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -299,6 +309,23 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="DailyFantasyProject" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/daily_fantasy_hockey/lineup_statistics.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="entry_builder" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/daily_fantasy_hockey" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="DailyFantasyProject" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/daily_fantasy_hockey/entry_builder.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -441,19 +468,19 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.yahoo_player_stats" />
-      <item index="1" class="java.lang.String" itemvalue="Python.nightly_update" />
-      <item index="2" class="java.lang.String" itemvalue="Python.load_game_data" />
-      <item index="3" class="java.lang.String" itemvalue="Python.lineup_builder" />
-      <item index="4" class="java.lang.String" itemvalue="Python.lineup_statistics" />
+      <item index="0" class="java.lang.String" itemvalue="Python.nightly_update" />
+      <item index="1" class="java.lang.String" itemvalue="Python.load_game_data" />
+      <item index="2" class="java.lang.String" itemvalue="Python.lineup_builder" />
+      <item index="3" class="java.lang.String" itemvalue="Python.lineup_statistics" />
+      <item index="4" class="java.lang.String" itemvalue="Python.entry_builder" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.lineup_builder" />
-        <item index="1" class="java.lang.String" itemvalue="Python.lineup_statistics" />
-        <item index="2" class="java.lang.String" itemvalue="Python.load_game_data" />
-        <item index="3" class="java.lang.String" itemvalue="Python.nightly_update" />
-        <item index="4" class="java.lang.String" itemvalue="Python.yahoo_player_stats" />
+        <item index="0" class="java.lang.String" itemvalue="Python.entry_builder" />
+        <item index="1" class="java.lang.String" itemvalue="Python.lineup_builder" />
+        <item index="2" class="java.lang.String" itemvalue="Python.lineup_statistics" />
+        <item index="3" class="java.lang.String" itemvalue="Python.load_game_data" />
+        <item index="4" class="java.lang.String" itemvalue="Python.nightly_update" />
       </list>
     </recent_temporary>
   </component>
@@ -471,24 +498,42 @@
       <option name="presentableId" value="Default" />
       <updated>1462243610319</updated>
     </task>
+    <task id="LOCAL-00001" summary="Switching to knapsack version.  Adding more information to database (saving player information, rather than calling from csv file every time).  Switching player structure from list to dictionary.  Working on adding opponent information to values.  Adding in lineup statistics, which can be used to keep track of lineups and calculate actual lineup totals the day after.">
+      <created>1478564525562</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1478564525562</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27452415" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23639774" sideWeight="0.50208336" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25036603" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33438486" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23639774" sideWeight="0.50208336" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3280757" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329653" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23343849" sideWeight="0.49791667" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329653" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30441642" sideWeight="0.49791667" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18155198" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39589906" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -525,6 +570,11 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Switching to knapsack version.  Adding more information to database (saving player information, rather than calling from csv file every time).  Switching player structure from list to dictionary.  Working on adding opponent information to values.  Adding in lineup statistics, which can be used to keep track of lineups and calculate actual lineup totals the day after." />
+    <MESSAGE value="Switching most data to python classes and splitting out into separate files.  Adding entry system, for adjusting lineups after submitting." />
+    <option name="LAST_COMMIT_MESSAGE" value="Switching most data to python classes and splitting out into separate files.  Adding entry system, for adjusting lineups after submitting." />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <default-breakpoints>
@@ -534,7 +584,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="18" />
+      <option name="time" value="20" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -544,291 +594,346 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/bhp/scripts/nhl_updates/nhl_game.py" />
-    <entry file="file://$PROJECT_DIR$/bhp/scripts/nhl_updates/nightly_update.py" />
-    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/lineup_builder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/knapsack.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/knapsack.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bhp/parsers.py" />
-    <entry file="file://$PROJECT_DIR$/bhp/scripts/nhl_updates/parsers.py" />
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python35/Lib/urllib/request.py" />
-    <entry file="file://$PROJECT_DIR$/bhp/scripts/nhl_updates/insert_games.py" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161107-163208.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161107-155140" />
+    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_statistics.log.20161107-194746" />
     <entry file="file://$PROJECT_DIR$/resources/json/2015/0213_home.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
+        <state relative-caret-position="2770">
           <caret line="1451" column="25" selection-start-line="1451" selection-start-column="25" selection-end-line="1451" selection-end-column="25" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bhp/scripts/nhl_updates/game.py" />
-    <entry file="file://$PROJECT_DIR$/bhp/match/models.py" />
-    <entry file="file://$PROJECT_DIR$/bhp/hockeypool/models.py" />
-    <entry file="file://$PROJECT_DIR$/bhp/scripts/nhl_updates/nightly_update.py" />
-    <entry file="file://$PROJECT_DIR$/bhp/scripts/nhl_updates/nhl_game.py" />
-    <entry file="file://$PROJECT_DIR$/.gitignore">
+    <entry file="file://$PROJECT_DIR$/resources/json/2015/0213_away.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python35-32/Lib/urllib/request.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9588">
-          <caret line="589" column="0" selection-start-line="589" selection-start-column="0" selection-end-line="589" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Dropbox/Graduate/Research/Thesis/figures/plots/data/results/dcs_space_growth.py">
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161108-012516.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161108-013644.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161108-013605.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161108-013032.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161108-014423.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161108-013731.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161108-015849.csv">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/DKSalaries_No_ID.csv" />
-    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/draftkings_points_by_game.sql">
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161108-021635.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161108-015217.csv">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="68">
-          <caret line="4" column="21" selection-start-line="4" selection-start-column="21" selection-end-line="4" selection-end-column="21" />
+          <caret line="4" column="222" selection-start-line="4" selection-start-column="222" selection-end-line="4" selection-end-column="222" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/DKSetLineup.csv" />
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python35-32/Lib/csv.py">
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161108-032703.csv">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="152" column="0" selection-start-line="152" selection-start-column="0" selection-end-line="152" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="189">
+          <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/draftkings nhl 300pm (All Day) 13 Games.csv" />
-    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/lineup_builder.log.20161105-222729" />
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161105-223750" />
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161105-224135" />
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161105-224216">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-10547">
-          <caret line="2" column="43" selection-start-line="2" selection-start-column="43" selection-end-line="2" selection-end-column="64" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/load_game_data.log.20161106-104503">
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161108-033217.csv">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161108-033729.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161108-033352.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="172">
+          <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/DKSalaries_08NOV2016.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="561">
+          <caret line="36" column="36" selection-start-line="36" selection-start-column="12" selection-end-line="36" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161108-133243.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="190">
+          <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/DKEntries_08NOV2016.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="9" selection-start-line="0" selection-start-column="9" selection-end-line="0" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Google Drive/Work/DailyFantasyProject/bhp/scripts/nhl_updates/parsers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1819">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Google Drive/Work/DailyFantasyProject/bhp/scripts/nhl_updates/nightly_update.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="16" column="29" selection-start-line="16" selection-start-column="29" selection-end-line="16" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161108-203759">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-68">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/load_game_data.log.20161106-104442">
+    <entry file="file://$PROJECT_DIR$/resources/sql/daily_fantasy_hockey_db.sqlite-journal">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/load_game_data.log.20161106-104347">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/load_game_data.log.20161106-104136">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/load_game_data.log.20161106-103839">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161106-104649">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python35-32/Lib/logging/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="271">
-          <caret line="1485" column="0" selection-start-line="1485" selection-start-column="0" selection-end-line="1485" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161106-120424">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161106-120559">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161106-190729">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161106-190825">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161106-225916">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="90" selection-start-line="6" selection-start-column="90" selection-end-line="6" selection-end-column="134" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161106-230319">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161106-230616">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/Yahoo_DF_player_export.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/DKEntries.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/DKSalaries_06NOV2016.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="12" selection-start-line="17" selection-start-column="12" selection-end-line="17" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/DKSalaries_07NOV2016.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="20" column="36" selection-start-line="20" selection-start-column="11" selection-end-line="20" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/load_game_data.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-8617">
-          <caret line="352" column="40" selection-start-line="352" selection-start-column="40" selection-end-line="352" selection-end-column="40" />
-          <folding>
-            <element signature="e#0#11#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/lineup_statistics.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="169">
-          <caret line="139" column="53" selection-start-line="139" selection-start-column="53" selection-end-line="139" selection-end-column="53" />
+        <state relative-caret-position="493">
+          <caret line="95" column="24" selection-start-line="95" selection-start-column="24" selection-end-line="95" selection-end-column="24" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/DKAllLineups.csv">
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/player.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+        <state relative-caret-position="-349">
+          <caret line="59" column="21" selection-start-line="59" selection-start-column="21" selection-end-line="59" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161108-133847.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="41" selection-start-line="7" selection-start-column="41" selection-end-line="7" selection-end-column="41" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/DKLineup.csv">
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161109-034403.csv">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
-          <caret line="0" column="15" selection-start-line="0" selection-start-column="15" selection-end-line="0" selection-end-column="15" />
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161109-034636.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161109-040439.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161109-040704.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/calculate_sets_of_players.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-832">
+          <caret line="121" column="39" selection-start-line="121" selection-start-column="39" selection-end-line="121" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161109-040809.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-230">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/player_draftkings_info.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2329">
+          <caret line="159" column="14" selection-start-line="159" selection-start-column="14" selection-end-line="159" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/DKSalaries_09NOV2016.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="128">
+          <caret line="85" column="0" selection-start-line="85" selection-start-column="0" selection-end-line="85" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/lineup_builder.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7531">
-          <caret line="443" column="47" selection-start-line="443" selection-start-column="47" selection-end-line="443" selection-end-column="47" />
+        <state relative-caret-position="187">
+          <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="35" selection-end-column="33" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/database.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="188">
+          <caret line="39" column="37" selection-start-line="39" selection-start-column="37" selection-end-line="39" selection-end-column="37" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/DKEntries_09NOV2016.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="20" column="16" selection-start-line="20" selection-start-column="16" selection-end-line="20" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-154419.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-154700.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/lineup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="889">
+          <caret line="72" column="30" selection-start-line="72" selection-start-column="30" selection-end-line="72" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-155442.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-155537.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-161728.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-162514.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-162857.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-163142.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/entry.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="15" column="60" selection-start-line="15" selection-start-column="60" selection-end-line="15" selection-end-column="60" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/entry_builder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="239">
+          <caret line="155" column="35" selection-start-line="155" selection-start-column="35" selection-end-line="155" selection-end-column="35" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/load_game_data.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="132">
+          <caret line="788" column="18" selection-start-line="788" selection-start-column="18" selection-end-line="788" selection-end-column="18" />
+          <folding />
         </state>
       </provider>
     </entry>
