@@ -1,11 +1,11 @@
 import logging
-from player import playerGame
-from database import database
-from load_game_data import update_player
+from player import PlayerGame
+from update_game_info import update_player
 
 logger = logging.getLogger(__name__)
 
-class playerDraftKingsInfo():
+
+class PlayerDraftKingsInfo():
     _playerGame = None
     _name = None
     _draftKingsId = None
@@ -22,8 +22,8 @@ class playerDraftKingsInfo():
     _weight = None
     _db = None
 
-    def __init__(self, db, nameAndId, name = None, draftKingsId = None, weight = None, position = None,
-                 gameInfo = None, teamAbbrev = None, draftType = None, dateForLineup = None):
+    def __init__(self, db, nameAndId, name=None, draftKingsId=None, weight=None, position=None,
+                 gameInfo=None, teamAbbrev=None, draftType=None, dateForLineup=None):
         self._db = db
 
         # Find player ID from player name from draftkings (or if nameAndId, find from database)
@@ -45,7 +45,7 @@ class playerDraftKingsInfo():
             self.find_player_draftkings_info(db)
 
         # Initialize playerGame object
-        self._playerGame = playerGame(db, self._playerId, self._gamePk)
+        self._playerGame = PlayerGame(db, self._playerId, self._gamePk)
 
         # Find information on player
         self._opponentId = self._playerGame.get_opponent_id()
@@ -109,7 +109,8 @@ class playerDraftKingsInfo():
 
     def get_game_pk(self):  # , date_for_lineup):
         try:
-            logging.debug("Getting player gamePk for player ID: " + str(self._playerId))  # + " on " + str(date_for_lineup))
+            logging.debug(
+                "Getting player gamePk for player ID: " + str(self._playerId))  # + " on " + str(date_for_lineup))
             # Check for games that aren't finished (statusCode == 7), as future games aren't loaded in
             self._db.query('''select g.gamePk
                            from players p
@@ -128,7 +129,7 @@ class playerDraftKingsInfo():
                                  p.currentTeamId = g.homeTeamId)
                           where p.id = ? and
                                 g.statusCode != 7''',
-                      (self._playerId, self._playerId,))  # , date_for_lineup, player_id, date_for_lineup,))
+                           (self._playerId, self._playerId,))  # , date_for_lineup, player_id, date_for_lineup,))
             for player in self._db.fetchall():
                 return player['gamePk']
 
@@ -153,17 +154,18 @@ class playerDraftKingsInfo():
                                      p.currentTeamId = g.homeTeamId)
                               where p.id = ? and
                                     g.statusCode != 7''',
-                          (self._playerId, self._playerId,))  # , date_for_lineup, player_id, date_for_lineup,))
+                               (self._playerId, self._playerId,))  # , date_for_lineup, player_id, date_for_lineup,))
                 for player in self._db.fetchall():
                     return player['gamePk']
 
-            # raise ValueError("Could not find any gamePk for " + str(self._playerId))
+                    # raise ValueError("Could not find any gamePk for " + str(self._playerId))
 
         except Exception as e:
             logging.error("Could not find gamePk for " + str(self._name))
             logging.error("Got the following error:")
             logging.error(e)
             # raise e
+
     #
     # def get_player_info_by_name_and_draftkings_id(self):
     #     try:
@@ -179,24 +181,42 @@ class playerDraftKingsInfo():
 
     def calculate_value(self):
         try:
-            logging.debug("Getting player value for player ID:" + str(self._playerId))
+            logging.debug("Getting player value for " + str(self._name))
             # Find average points for last week and for the year
             self._db.query('''select p.fullName,
-                                AVG(case when g.gamePk like '2016%' then gdp.points else null end) AS average_points_for_year,
-                                ifnull(AVG(case when g.gameDate > date('now','-14 day') then gdp.points else null end),0) AS average_points_for_two_weeks
+                                ifnull(avg(case when g.gamePk like '2015%' then gdp.points else null end),0) AS average_points_last_year,
+                                count(case when g.gamePk like '2015%' then gdp.points else null end) as games_last_year,
+                                ifnull(avg(case when g.gamePk like '2016%' then gdp.points else null end),0) AS average_points_this_year,
+                                count(case when g.gamePk like '2016%' then gdp.points else null end) as games_this_year,
+                                ifnull(avg(case when g.gameDate > date('now','-14 day') then gdp.points else null end),0) AS average_points_last_two_weeks,
+                                count(case when g.gameDate > date('now','-14 day') then gdp.points else null end) AS games_last_two_weeks
                          from games_draftkings_points gdp
                          inner join players p
                          on gdp.playerid = p.id
                          inner join games g
                          on gdp.gamePk = g.gamePk
-                         where g.gamePk like '2016%' and
+                         where (g.gamePk like '2016%' or g.gamePk like '2015%') and
                                p.id = ?
                          group by p.id''', (self._playerId,))
             value = 0
             for player_stats in self._db.fetchall():
-                # Calculate value
-                value = 0.8 * player_stats['average_points_for_year'] + 0.2 * player_stats[
-                    'average_points_for_two_weeks']
+                # Calculate total games (will be over one due to last two weeks, but want to find the ratio for each stat)
+                total_games = player_stats['games_last_year'] + player_stats['games_this_year'] + player_stats['games_last_two_weeks']
+                logging.debug("Total games last year is " + str(player_stats['games_last_year']))
+                logging.debug("Total games this year is " + str(player_stats['games_this_year']))
+                logging.debug("Total games last two weeks is " + str(player_stats['games_last_two_weeks']))
+                logging.debug("Average points last year is " + str(player_stats['average_points_last_year']))
+                logging.debug("Average points this year is " + str(player_stats['average_points_this_year']))
+                logging.debug("Average points last two weeks is " + str(player_stats['average_points_last_two_weeks']))
+
+                # Calculate value (ignore players that haven't played a game this year)
+                if player_stats['games_this_year'] != 0:
+                    value = (player_stats['games_last_year'] / total_games) * player_stats[
+                        'average_points_last_year'] + (player_stats['games_this_year'] / total_games) * player_stats[
+                        'average_points_this_year'] + (player_stats['games_last_two_weeks'] / total_games) * player_stats[
+                        'average_points_last_two_weeks']
+                else:
+                    return 0
                 logging.debug("Value of " + str(value) + " for " + player_stats['fullName'])
 
             # Adjust value based on opponent
@@ -269,4 +289,3 @@ class playerDraftKingsInfo():
 
     def get_weight(self):
         return self._weight
-

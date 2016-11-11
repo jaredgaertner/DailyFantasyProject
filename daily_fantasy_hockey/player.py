@@ -3,7 +3,7 @@ from database import database
 
 logger = logging.getLogger(__name__)
 
-class player():
+class Player():
     _playerId = None
     _fullName = None
     _currentTeamId = None
@@ -28,7 +28,7 @@ class player():
     def get_current_team_id(self):
         return self._currentTeamId
 
-class game():
+class Game():
     _gamePk = None
     _gameDate = None
     _statusCode = None
@@ -48,7 +48,7 @@ class game():
             self._awayTeamId = player['awayTeamId']
             self._homeTeamId = player['homeTeamId']
 
-class playerGame():
+class PlayerGame():
     _player = None
     _playerId = None
     _game = None
@@ -59,9 +59,9 @@ class playerGame():
     def __init__(self, db, playerId, gamePk):
         self._db = db
         self._playerId = playerId
-        self._player = player(db, self._playerId)
+        self._player = Player(db, self._playerId)
         self._gamePk = gamePk
-        self._game = game(db, self._gamePk)
+        self._game = Game(db, self._gamePk)
         self._opponentId = self.get_opponent_id()
 
     def get_opponent_id(self):

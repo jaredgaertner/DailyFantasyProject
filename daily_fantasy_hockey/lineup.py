@@ -1,11 +1,10 @@
 import datetime
 import logging
-from player_draftkings_info import playerDraftKingsInfo
+from player_draftkings_info import PlayerDraftKingsInfo
 
 logger = logging.getLogger(__name__)
 
-
-class lineup():
+class Lineup():
     _db = None
     _players = None
     _dateForLineup = None
@@ -20,7 +19,7 @@ class lineup():
         self._gamePkStart = 9999999999
         self._gamePkEnd = 0
         for i in range(9):
-            player_info = playerDraftKingsInfo(db, playerInfo[i])
+            player_info = PlayerDraftKingsInfo(db, playerInfo[i])
             self._players.append(player_info)
 
             gamePk = player_info.get_game_pk()

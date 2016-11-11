@@ -1,10 +1,9 @@
 import datetime
 import logging
-from player_draftkings_info import playerDraftKingsInfo
 
 logger = logging.getLogger(__name__)
 
-class entry():
+class Entry():
     _db = None
     _id = None
     _entryId = None
