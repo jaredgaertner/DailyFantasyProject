@@ -49,13 +49,13 @@ def find_player_triples(players, position, max_triple_set_size=20000):
     #                                                              :max_triple_set_size]
 
 # http://stackoverflow.com/questions/19389931/knapsack-constraint-python
-def multi_choice_knapsack(goalie, util, defensemen, centres, wingers, limit):
+def multi_choice_knapsack(goalies, util, defensemen, centres, wingers, limit):
     # Remove chosen G and W from limit
-    limit -= (goalie.get_weight() + util.get_weight())
-    logging.debug("New limit, after removing chosen G is: " + str(limit))
+    limit -= util.get_weight()
+    logging.debug("New limit, after removing chosen Util is: " + str(limit))
 
-    # Run multiple-choice knapsack on the pairs of D, C, W, and any skaters for the Util position
-    positions = ["C", "W", "D"]
+    # Run multiple-choice knapsack on the pairs of D, C, W, and a goalie
+    positions = ["G", "C", "W", "D"]
     table = [[0 for w in range(limit + 1)] for j in range(len(positions) + 1)]
     player_added = [[0 for w in range(limit + 1)] for j in range(len(positions) + 1)]
     logging.debug("Knapsack: Going through all " + str(len(positions)) + " positions.")
@@ -63,6 +63,8 @@ def multi_choice_knapsack(goalie, util, defensemen, centres, wingers, limit):
         logging.debug("Multiple Choice Knapsack: Checking position " + str(positions[i - 1]))
         if positions[i - 1] == "W":
             current_player_set = wingers
+        elif positions[i - 1] == "G":
+            current_player_set = goalies
         elif positions[i - 1] == "D":
             current_player_set = defensemen
         elif positions[i - 1] == "C":
@@ -110,8 +112,8 @@ def multi_choice_knapsack(goalie, util, defensemen, centres, wingers, limit):
 
     # Adding players names to a set of players, results added in reverse order (Util, D, W, C)
     logging.debug(result)
-    total_weight += goalie.get_weight() + util.get_weight()
-    total_value += goalie.get_value() + util.get_value()
+    total_weight += util.get_weight()
+    total_value += util.get_value()
     logging.debug(total_value)
     full_set = [result[2]['nameAndId'][0],
                 result[2]['nameAndId'][1],
@@ -120,7 +122,7 @@ def multi_choice_knapsack(goalie, util, defensemen, centres, wingers, limit):
                 result[1]['nameAndId'][2],
                 result[0]['nameAndId'][0],
                 result[0]['nameAndId'][1],
-                goalie.get_name_and_id(),
+                result[3]['nameAndId'],
                 util.get_name_and_id(),
                 total_weight,
                 total_value]
@@ -130,7 +132,7 @@ def multi_choice_knapsack(goalie, util, defensemen, centres, wingers, limit):
     return set_of_players
 
 
-def knapsack(skaters, goalie, util, limit, max_set_size=2000, max_triple_set_size=400000):
+def knapsack(skaters, goalies, util, limit, max_set_size=2000, max_triple_set_size=400000):
     defensemen = find_player_pair(skaters, "D", max_set_size)
     centres = find_player_pair(skaters, "C", max_set_size)
     wingers = find_player_triples(skaters, "W", max_triple_set_size)
@@ -139,10 +141,10 @@ def knapsack(skaters, goalie, util, limit, max_set_size=2000, max_triple_set_siz
     logging.debug("Number of C pairs being checked: " + str(len(centres)))
     logging.debug("Number of W pairs being checked: " + str(len(wingers)))
 
-    return multi_choice_knapsack(goalie, util, defensemen, centres, wingers, limit)
+    return multi_choice_knapsack(goalies, util, defensemen, centres, wingers, limit)
 
 
-def brute_force(skaters, goalie, util, limit, max_set_size=2000):
+def brute_force(skaters, goalies, util, limit, max_set_size=2000):
     defensemen = find_player_pair(skaters, "D", max_set_size)
     centres = find_player_pair(skaters, "C", max_set_size)
     wingers = find_player_triples(skaters, "W", max_set_size)
@@ -156,41 +158,41 @@ def brute_force(skaters, goalie, util, limit, max_set_size=2000):
 
     logging.info(
         "Potential number of combinations: " + str(len(centres) * len(defensemen) * len(wingers)))
-    # for i in range(0, len(goalies)-1):
-    for j in range(len(centres)):
-        for k in range(len(defensemen)):
-            for l in range(len(wingers)):
-                # for m in range(len(skaters)):
-                #     if skaters[m]['nameAndId'] not in centres[j]['nameAndId'] and skaters[m]['nameAndId'] not in defensemen[k]['nameAndId'] and skaters[m][
-                #         0] not in wingers[l]['nameAndId'] and skaters[m]['nameAndId'] != winger['nameAndId']:
-                weight = goalie['weight'] + centres[j]['weight'] + defensemen[k]['weight'] + wingers[l]['weight'] + \
-                         util['weight']
-                value = goalie['value'] + centres[j]['value'] + defensemen[k]['value'] + wingers[l]['value'] + util[
-                    'value']
-                index += 1
+    for i in range(0, len(goalies)-1):
+        for j in range(len(centres)):
+            for k in range(len(defensemen)):
+                for l in range(len(wingers)):
+                    # for m in range(len(skaters)):
+                    #     if skaters[m]['nameAndId'] not in centres[j]['nameAndId'] and skaters[m]['nameAndId'] not in defensemen[k]['nameAndId'] and skaters[m][
+                    #         0] not in wingers[l]['nameAndId'] and skaters[m]['nameAndId'] != winger['nameAndId']:
+                    weight = goalies[i]['weight'] + centres[j]['weight'] + defensemen[k]['weight'] + wingers[l]['weight'] + \
+                             util['weight']
+                    value = goalies[i]['value'] + centres[j]['value'] + defensemen[k]['value'] + wingers[l]['value'] + util[
+                        'value']
+                    index += 1
 
-                if index % 10000 == 0:
-                    # Only keep the top 100 sets of players
-                    set_of_players = sorted(set_of_players, key=lambda tup: tup[10], reverse=True)
-                    set_of_players = set_of_players[:10]
+                    if index % 10000 == 0:
+                        # Only keep the top 100 sets of players
+                        set_of_players = sorted(set_of_players, key=lambda tup: tup[10], reverse=True)
+                        set_of_players = set_of_players[:10]
 
-                if index % 10000000 == 0:
-                    logging.info("Number of sets checked: " + str(index) + ", top set:")
-                    logging.info(set_of_players[0])
+                    if index % 10000000 == 0:
+                        logging.info("Number of sets checked: " + str(index) + ", top set:")
+                        logging.info(set_of_players[0])
 
-                if weight <= limit:
-                    full_set = [centres[j]['nameAndId'][0],
-                                centres[j]['nameAndId'][1],
-                                wingers[l]['nameAndId'][0],
-                                wingers[l]['nameAndId'][1],
-                                wingers[l]['nameAndId'][2],
-                                defensemen[k]['nameAndId'][0],
-                                defensemen[k]['nameAndId'][1],
-                                goalie['nameAndId'],
-                                util['nameAndId'],
-                                weight,
-                                value]
-                    set_of_players.append(full_set)
+                    if weight <= limit:
+                        full_set = [centres[j]['nameAndId'][0],
+                                    centres[j]['nameAndId'][1],
+                                    wingers[l]['nameAndId'][0],
+                                    wingers[l]['nameAndId'][1],
+                                    wingers[l]['nameAndId'][2],
+                                    defensemen[k]['nameAndId'][0],
+                                    defensemen[k]['nameAndId'][1],
+                                    goalies[i]['nameAndId'],
+                                    util['nameAndId'],
+                                    weight,
+                                    value]
+                        set_of_players.append(full_set)
 
     logging.debug("Number of sets checked: " + str(index))
     return set_of_players

@@ -5,6 +5,7 @@ import urllib.request
 import time
 import logging
 from database import database
+from bs4 import BeautifulSoup
 
 __author__ = "jaredg"
 
@@ -70,36 +71,13 @@ def drop_tables(db):
         logging.error("Could not drop tables, got the following error:")
         logging.error(e)
 
+    try:
+        db.query('''DROP table player_game_lineup_combinations''')
+    except Exception as e:
+        logging.error("Could not drop tables, got the following error:")
+        logging.error(e)
 
-def create_team_stats(db):
-
-    # Create team stats table
-    # Based on NHL API: http://www.nhl.com/stats/rest/grouped/team/basic/season/teamsummary?cayenneExp=seasonId=20162017%20and%20gameTypeId=2
-    db.query('''CREATE TABLE team_stats
-                 (teamId number primary key,
-                  seasonId number,
-                  gamesPlayed number,
-                  wins number,
-                  ties text,
-                  losses number,
-                  otLosses number,
-                  points number,
-                  regPlusOtWins number,
-                  pointPctg number,
-                  goalsFor number,
-                  goalsAgainst number,
-                  goalsForPerGame number,
-                  goalsAgainstPerGame number,
-                  ppPctg number,
-                  pkPctg number,
-                  shotsForPerGame number,
-                  shotsAgainstPerGame number,
-                  faceoffWinPctg number,
-                  goalsAgainstPerGamePercentage number,
-                  foreign key(teamId) references teams(id))''')
-
-def create_player_draftkings_stats():
-    db = database()
+def create_player_draftkings_stats(db):
 
     # Fantasy player information for daily draftkings draft
     db.query('''CREATE TABLE player_draftkings_info
@@ -118,6 +96,21 @@ def create_player_draftkings_stats():
                   draftType text,
                   foreign key (playerId) references players(id),
                   foreign key (gamePk) references games(gamePk)''')
+
+def create_player_games(db):
+    # Create player games table
+    # Based on NHL API: https://statsapi.web.nhl.com/api/v1/game/2015020051/feed/live, under liveData -> boxScore -> teams -> away/home -> players -> IDXXXXXX -> stats -> goaliestats
+    # TODO: make games_players_... reference this and any other spots that link players and games
+    db.query('''CREATE TABLE player_games
+                 (playerId number,
+                  gamePk number,
+                  opponentId number,
+                  createdOn date,
+                  updatedOn date,
+                  primary key (playerId, gamePk),
+                  foreign key(playerId) references players(id),
+                  foreign key(gamePk) references games(gamePk),
+                  foreign key(opponentId) references teams(id))''')
 
 def create_daily_draftkings_lineups(db):
 
@@ -185,7 +178,6 @@ def create_daily_draftkings_entries(db):
                   foreign key (goalie) references players(id),
                   foreign key (util) references players(id))''')
 
-
 def create_tables(db):
 
     # Create teams table
@@ -233,17 +225,7 @@ def create_tables(db):
                 primary key(id),
                 foreign key(currentTeamId) references teams(id))''')
 
-    # Create goalie stats table
-    # Based on NHL API: https://statsapi.web.nhl.com/api/v1/game/2015020051/feed/live, under liveData -> boxScore -> teams -> away/home -> players -> IDXXXXXX -> stats -> goaliestats
-    # TODO: add this table and make games_players_... reference this, as well as combine the calls to each
-    db.query('''CREATE TABLE games_players
-                 (gamePk number,
-                  teamId number,
-                  playerId number,
-                  type text,
-                  primary key(gamePk, teamId, playerId),
-                  foreign key(teamId) references teams(id))''')
-
+    create_player_games(db)
 
     # Create skater stats table
     # Based on NHL API: https://statsapi.web.nhl.com/api/v1/game/2015020051/feed/live, under liveData -> boxScore -> teams -> away/home -> players -> IDXXXXXX -> stats -> skaterStats
@@ -304,13 +286,6 @@ def create_tables(db):
                  foreign key (gamePk) references games(gamePk),
                  foreign key (playerId) references players(id))''')
 
-    # Player information for Draftkings per day
-    create_player_draftkings_stats(db)
-
-    # Create team stats table
-    # Based on NHL API: http://www.nhl.com/stats/rest/grouped/team/basic/season/teamsummary?cayenneExp=seasonId=20162017%20and%20gameTypeId=2
-    create_team_stats(db)
-
     # Picked lineups and results
     create_daily_draftkings_lineups(db)
     create_daily_draftkings_entries(db)
@@ -366,82 +341,82 @@ def update_games(db, start_date, end_date):
                     # raise e
 
 
-def update_player(db, playerId):
+def update_player(db, playerId, force_update = False):
 
     # TODO: Check into any potential player updates
-    # db.query("SELECT EXISTS(SELECT 1 FROM players WHERE id = ?) playerExists", (playerId,))
-    # if db.fetchone()['playerExists'] == 1:
-    #     logging.info("Skipping player ID: " + str(playerId))
-    # else:
-    try:
-        logging.info("Updating player ID: " + str(playerId))
-        url = 'https://statsapi.web.nhl.com/api/v1/people/' + str(playerId)
-        response = urllib.request.urlopen(url).read()
-        data = json.loads(response.decode())
+    db.query("SELECT EXISTS(SELECT 1 FROM players WHERE id = ?) playerExists", (playerId,))
+    if db.fetchone()['playerExists'] == 1 and force_update != True:
+        logging.info("Skipping player ID: " + str(playerId))
+    else:
+        try:
+            logging.info("Updating player ID: " + str(playerId))
+            url = 'https://statsapi.web.nhl.com/api/v1/people/' + str(playerId)
+            response = urllib.request.urlopen(url).read()
+            data = json.loads(response.decode())
 
-        for player in data['people']:
+            for player in data['people']:
 
-            try:
-                if "currentTeam" in player:
-                    currentTeamId = player['currentTeam']['id']
-                else:
-                    currentTeamId = None
+                try:
+                    if "currentTeam" in player:
+                        currentTeamId = player['currentTeam']['id']
+                    else:
+                        currentTeamId = None
 
-                playerList = [player['id'],
-                              player['fullName'],
-                              player['link'],
-                              player['firstName'],
-                              player['lastName'],
-                              # player['primaryNumber'],
-                              player['birthDate'],
-                              # player['currentAge'],
-                              player['birthCity'],
-                              # player['birthStateProvince'],
-                              player['birthCountry'],
-                              player['height'],
-                              player['weight'],
-                              player['active'],
-                              # player['alternateCaptain'],
-                              # player['captain'],
-                              player['rookie'],
-                              player['shootsCatches'],
-                              player['rosterStatus'],
-                              currentTeamId,
-                              player['primaryPosition']['abbreviation']]
+                    playerList = [player['id'],
+                                  player['fullName'],
+                                  player['link'],
+                                  player['firstName'],
+                                  player['lastName'],
+                                  # player['primaryNumber'],
+                                  player['birthDate'],
+                                  # player['currentAge'],
+                                  player['birthCity'],
+                                  # player['birthStateProvince'],
+                                  player['birthCountry'],
+                                  player['height'],
+                                  player['weight'],
+                                  player['active'],
+                                  # player['alternateCaptain'],
+                                  # player['captain'],
+                                  player['rookie'],
+                                  player['shootsCatches'],
+                                  player['rosterStatus'],
+                                  currentTeamId,
+                                  player['primaryPosition']['abbreviation']]
 
-                db.query('''INSERT OR REPLACE INTO players
-                        (id,
-                        fullName,
-                        link,
-                        firstName,
-                        lastName,
-                        birthDate,
-                        birthCity,
-                        birthCountry,
-                        height,
-                        weight,
-                        active,
-                        rookie,
-                        shootsCatches,
-                        rosterStatus,
-                        currentTeamId,
-                        primaryPositionAbbr) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', playerList)
-            except Exception as e:
-                logging.error("Could not insert the following player stats:")
-                logging.error(player)
-                logging.error("Got the following error:")
-                logging.error(e)
-                # Roll back any change if something goes wrong
-                # db.rollback()
-                # raise e
+                    db.query('''INSERT OR REPLACE INTO players
+                            (id,
+                            fullName,
+                            link,
+                            firstName,
+                            lastName,
+                            birthDate,
+                            birthCity,
+                            birthCountry,
+                            height,
+                            weight,
+                            active,
+                            rookie,
+                            shootsCatches,
+                            rosterStatus,
+                            currentTeamId,
+                            primaryPositionAbbr) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', playerList)
+                except Exception as e:
+                    logging.error("Could not insert the following player stats:")
+                    logging.error(player)
+                    logging.error("Got the following error:")
+                    logging.error(e)
+                    # Roll back any change if something goes wrong
+                    # db.rollback()
+                    # raise e
 
-    except Exception as e:
-        logging.error("Could not connect to player API:")
-        logging.error("Got the following error:")
-        logging.error(e)
-        # Roll back any change if something goes wrong
-        # db.rollback()
-        # raise e
+        except Exception as e:
+            logging.error("Could not connect to player API:")
+            logging.error("Got the following error:")
+            logging.error(e)
+            # Roll back any change if something goes wrong
+            # db.rollback()
+            # raise e
 
 
 def update_players(db, update_date):
@@ -806,32 +781,22 @@ def update_games_draftkings_points(db, update_date):
             # raise e
 
 
-def update_team_stats(db, season):
+def get_player_id_by_name(db, playerName):
+    try:
+        db.query("select p.id from players p where p.fullName = ?", (playerName,))
+        for player in db.fetchall():
+            return player['id']
 
-    # Create team data
-    url = "http://www.nhl.com/stats/rest/grouped/team/basic/season/teamsummary?cayenneExp=seasonId=" + season + "%20and%20gameTypeId=2"
-    response = urllib.request.urlopen(url).read()
-    data = json.loads(response.decode())
+        # Couldn't find the player, try their last name only
+        db.query("select p.id from players p where lower(p.lastName) = lower(?)", (playerName.split()[1],))
+        for player in db.fetchall():
+            return player['id']
 
-    for team_stat in data['data']:
-        try:
-            db.query(
-                '''INSERT or REPLACE INTO team_stats(teamId, seasonId, gamesPlayed, wins, ties, losses, otLosses, points, regPlusOtWins, pointPctg, goalsFor, goalsAgainst, goalsForPerGame, goalsAgainstPerGame, ppPctg, pkPctg, shotsForPerGame, shotsAgainstPerGame, faceoffWinPctg) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
-                [team_stat['teamId'], team_stat['seasonId'], team_stat['gamesPlayed'], team_stat['wins'],
-                 team_stat['ties'], team_stat['losses'], team_stat['otLosses'], team_stat['points'],
-                 team_stat['regPlusOtWins'], team_stat['pointPctg'], team_stat['goalsFor'], team_stat['goalsAgainst'],
-                 team_stat['goalsForPerGame'], team_stat['goalsAgainstPerGame'], team_stat['ppPctg'],
-                 team_stat['pkPctg'], team_stat['shotsForPerGame'], team_stat['shotsAgainstPerGame'],
-                 team_stat['faceoffWinPctg']])
-
-        except Exception as e:
-            logging.error("Could not insert the following team stats:")
-            logging.error(team_stat)
-            logging.error("Got the following error:")
-            raise e
-            # Roll back any change if something goes wrong
-            # db.rollback()
-            # raise e
+    except Exception as e:
+        logging.error("Could not find player ID for " + playerName)
+        logging.error("Got the following error:")
+        logging.error(e)
+        raise e
 
 def update_game_info(db, update_type = "week_ago"):
     # Update for previous week, will overwrite any data
@@ -852,14 +817,12 @@ def update_game_info(db, update_type = "week_ago"):
     else:
         update_as_of = week_ago
 
-    update_games(db, update_as_of, datetime.date.today())
+    update_games(db, update_as_of, datetime.date.today() + datetime.timedelta(days=1))
     update_games_players_skaters_stats(db, update_as_of)
     update_games_players_goalie_stats(db, update_as_of)
     update_players(db, update_as_of)
 
-    # Update team stats
-    update_team_stats(db, "20162017")
-
     # Find point values
     update_games_draftkings_points(db, update_as_of)
+
     db.commit()

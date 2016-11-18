@@ -5,13 +5,6 @@ from player_draftkings_info import PlayerDraftKingsInfo
 logger = logging.getLogger(__name__)
 
 class Lineup():
-    _db = None
-    _players = None
-    _dateForLineup = None
-    _gamePkStart = None
-    _gamePkEnd = None
-    _totalValue = None
-    _totalWeight = None
 
     def __init__(self, db, playerInfo):
         self._db = db
@@ -31,6 +24,13 @@ class Lineup():
 
         self._totalValue = self.calculate_lineup_value()
         self._totalWeight = self.calculate_lineup_weight()
+
+    # The following two methods are for printing and debugging
+    def __str__(self):
+        return ", ".join(str(x) for x in self.get_list())
+
+    def __repr__(self):
+        return ", ".join(str(x) for x in self.get_list())
 
     def get_centre1(self):
         return self._players[0]

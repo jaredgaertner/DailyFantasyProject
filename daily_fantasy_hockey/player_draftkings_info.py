@@ -1,26 +1,12 @@
 import logging
-from player import PlayerGame
-from update_game_info import update_player
+from player_game import PlayerGame
+from update_game_info import get_player_id_by_name
 
 logger = logging.getLogger(__name__)
 
 
-class PlayerDraftKingsInfo():
-    _playerGame = None
-    _name = None
-    _draftKingsId = None
-    _nameAndId = None
+class PlayerDraftKingsInfo(PlayerGame):
     _playerId = None
-    _position = None
-    _opponentId = None
-    _gamePk = None
-    _dateForLineup = None
-    _gameInfo = None
-    _teamAbbrev = None
-    _draftType = None
-    _value = None
-    _weight = None
-    _db = None
 
     def __init__(self, db, nameAndId, name=None, draftKingsId=None, weight=None, position=None,
                  gameInfo=None, teamAbbrev=None, draftType=None, dateForLineup=None):
@@ -30,14 +16,13 @@ class PlayerDraftKingsInfo():
         if name != None:
             self._draftKingsId = draftKingsId
             self._name = name
-            self._nameAndId = self._name + " (" + str(self._draftKingsId) + ")"
+            self._nameAndId = nameAndId
             self._weight = weight
             self._position = "W" if position in ["LW", "RW"] else position
             self._gameInfo = gameInfo
             self._teamAbbrev = teamAbbrev
             self._draftType = draftType
-            self._playerId = self.get_player_id_by_name()
-            self._gamePk = self.get_game_pk()
+            self._playerId = get_player_id_by_name(self._db, self._name)
             self._dateForLineup = dateForLineup
             self._value = self.calculate_value()
         else:
@@ -45,10 +30,7 @@ class PlayerDraftKingsInfo():
             self.find_player_draftkings_info(db)
 
         # Initialize playerGame object
-        self._playerGame = PlayerGame(db, self._playerId, self._gamePk)
-
-        # Find information on player
-        self._opponentId = self._playerGame.get_opponent_id()
+        PlayerGame.__init__(self, self._db, self._playerId)
 
     def find_player_draftkings_info(self, db):
         db.query('''select pdi.id,
@@ -68,31 +50,14 @@ class PlayerDraftKingsInfo():
                     where nameAndId = ?''', (self._nameAndId,))
         for player_info in db.fetchall():
             self._draftKingsId = player_info['id']
-            self._name = player_info['name']
             self._weight = player_info['weight']
             self._position = player_info['position']
             self._gameInfo = player_info['gameInfo']
             self._teamAbbrev = player_info['teamAbbrev']
             self._draftType = player_info['draftType']
             self._playerId = player_info['playerId']
-            self._gamePk = player_info['gamePk']
             self._dateForLineup = player_info['dateForLineup']
             self._value = player_info['value']
-
-    def get_player_id_by_name(self):
-        try:
-            self._db.query("select p.id from players p where p.fullName = ?", (self._name,))
-            for player in self._db.fetchall():
-                return player['id']
-
-        except Exception as e:
-            logging.error("Could not find player ID for " + self._name)
-            logging.error("Got the following error:")
-            logging.error(e)
-            raise e
-
-    def get_player_id(self):
-        return self._playerId
 
     def get_name_and_id(self):
         return self._nameAndId
@@ -107,65 +72,6 @@ class PlayerDraftKingsInfo():
         self._value += value_to_add
         return self._value
 
-    def get_game_pk(self):  # , date_for_lineup):
-        try:
-            logging.debug(
-                "Getting player gamePk for player ID: " + str(self._playerId))  # + " on " + str(date_for_lineup))
-            # Check for games that aren't finished (statusCode == 7), as future games aren't loaded in
-            self._db.query('''select g.gamePk
-                           from players p
-                          inner join games g
-                             on (p.currentTeamId = g.awayTeamId or
-                                 p.currentTeamId = g.homeTeamId)
-                          where p.id = ? and
-                                g.statusCode != 7
-
-                            union all
-
-                         select g.gamePk
-                           from players p
-                          inner join games g
-                             on (p.currentTeamId = g.awayTeamId or
-                                 p.currentTeamId = g.homeTeamId)
-                          where p.id = ? and
-                                g.statusCode != 7''',
-                           (self._playerId, self._playerId,))  # , date_for_lineup, player_id, date_for_lineup,))
-            for player in self._db.fetchall():
-                return player['gamePk']
-
-            # Try updating player and trying again
-            if self._playerId != None:
-                logging.debug("Could not find any gamePk for " + str(self._playerId) + ", trying again.")
-                update_player(self._db, self._playerId)
-                self._db.query('''select g.gamePk
-                               from players p
-                              inner join games g
-                                 on (p.currentTeamId = g.awayTeamId or
-                                     p.currentTeamId = g.homeTeamId)
-                              where p.id = ? and
-                                    g.statusCode != 7
-
-                                union all
-
-                             select g.gamePk
-                               from players p
-                              inner join games g
-                                 on (p.currentTeamId = g.awayTeamId or
-                                     p.currentTeamId = g.homeTeamId)
-                              where p.id = ? and
-                                    g.statusCode != 7''',
-                               (self._playerId, self._playerId,))  # , date_for_lineup, player_id, date_for_lineup,))
-                for player in self._db.fetchall():
-                    return player['gamePk']
-
-                    # raise ValueError("Could not find any gamePk for " + str(self._playerId))
-
-        except Exception as e:
-            logging.error("Could not find gamePk for " + str(self._name))
-            logging.error("Got the following error:")
-            logging.error(e)
-            # raise e
-
     #
     # def get_player_info_by_name_and_draftkings_id(self):
     #     try:
@@ -179,9 +85,53 @@ class PlayerDraftKingsInfo():
     #         logging.error(e)
     #         raise e
 
+    def insert_player_data(self):
+        logging.debug("Inserting player information for DraftKings for " + str(self._name))
+        try:
+            player_info_list = [self._draftKingsId,
+                                self._name,
+                                self._nameAndId,
+                                self._playerId,
+                                self._weight,
+                                self._value,
+                                self._position,
+                                self._gameInfo,
+                                self._opponentId,
+                                self._gamePk,
+                                self._teamAbbrev,
+                                self._draftType,
+                                self._dateForLineup]
+
+            self._db.query('''INSERT OR IGNORE INTO player_draftkings_info
+                    (id,
+                     name,
+                     nameAndId,
+                     playerId,
+                     weight,
+                     value,
+                     position,
+                     gameInfo,
+                     opponentId,
+                     gamePk,
+                     teamAbbrev,
+                     draftType,
+                     dateForLineup) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''', player_info_list)
+
+        except Exception as e:
+            logging.error("Could not insert player info for DraftKings.")
+            logging.error("Got the following error:")
+            logging.error(e)
+            # Roll back any change if something goes wrong
+            # db.rollback()
+            # raise e
+
+    def get_weight(self):
+        return self._weight
+
+
     def calculate_value(self):
         try:
-            logging.debug("Getting player value for " + str(self._name))
+            logging.debug("Getting player value for " + str(self._playerId))
             # Find average points for last week and for the year
             self._db.query('''select p.fullName,
                                 ifnull(avg(case when g.gamePk like '2015%' then gdp.points else null end),0) AS average_points_last_year,
@@ -201,7 +151,8 @@ class PlayerDraftKingsInfo():
             value = 0
             for player_stats in self._db.fetchall():
                 # Calculate total games (will be over one due to last two weeks, but want to find the ratio for each stat)
-                total_games = player_stats['games_last_year'] + player_stats['games_this_year'] + player_stats['games_last_two_weeks']
+                total_games = player_stats['games_last_year'] + player_stats['games_this_year'] + player_stats[
+                    'games_last_two_weeks']
                 logging.debug("Total games last year is " + str(player_stats['games_last_year']))
                 logging.debug("Total games this year is " + str(player_stats['games_this_year']))
                 logging.debug("Total games last two weeks is " + str(player_stats['games_last_two_weeks']))
@@ -246,46 +197,3 @@ class PlayerDraftKingsInfo():
             logging.error("Got the following error:")
             logging.error(e)
             raise e
-
-    def insert_player_data(self):
-        logging.debug("Inserting player information for DraftKings for " + str(self._name))
-        try:
-            player_info_list = [self._draftKingsId,
-                                self._name,
-                                self._nameAndId,
-                                self._playerId,
-                                self._weight,
-                                self._value,
-                                self._position,
-                                self._gameInfo,
-                                self._opponentId,
-                                self._gamePk,
-                                self._teamAbbrev,
-                                self._draftType,
-                                self._dateForLineup]
-
-            self._db.query('''INSERT OR IGNORE INTO player_draftkings_info
-                    (id,
-                     name,
-                     nameAndId,
-                     playerId,
-                     weight,
-                     value,
-                     position,
-                     gameInfo,
-                     opponentId,
-                     gamePk,
-                     teamAbbrev,
-                     draftType,
-                     dateForLineup) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''', player_info_list)
-
-        except Exception as e:
-            logging.error("Could not insert player info for DraftKings.")
-            logging.error("Got the following error:")
-            logging.error(e)
-            # Roll back any change if something goes wrong
-            # db.rollback()
-            # raise e
-
-    def get_weight(self):
-        return self._weight

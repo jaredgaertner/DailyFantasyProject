@@ -3,7 +3,8 @@ import logging
 from database import database
 from calculate_lineups import calculate_lineups
 from calculate_statistics import calculate_statistics
-from update_game_info import update_game_info
+from update_game_info import *
+from calculate_expected_values import *
 
 __author__ = "jaredg"
 
@@ -27,37 +28,21 @@ if __name__ == '__main__':
     db = database()
 
     logging.debug("Hardcoding date and goalies for the lineup....")
-    date_for_lineup = datetime.datetime.today()  # - datetime.timedelta(days=1)
-    chosen_goalies = ["Cam Talbot (7745471)", "Semyon Varlamov (7745462)", "Braden Holtby (7745457)", "Keith Kinkaid (7745439)", "Anders Nilsson (7745440)"]
-    lineups_per_goalie = 10
-    ir_players = ["Blake Comeau (7745288)",
-                  "Trevor van Riemsdyk (7745392)",
-                  "Andrew MacDonald (7745335)",
-                  "Jason Dickinson (7745156)",
-                  "Nikita Soshnikov (7745255)",
-                  "Jason Spezza (7745300)",
-                  "Patrick Sharp (7745221)",
-                  "Mattias Janmark (7745157)",
-                  "Joffrey Lupul (7745245)",
-                  "Tyler Motte (7745281)",
-                  "Zach Bogosian (7745318)",
-                  "Jason Spezza (7745300)",
-                  "Tyler Ennis (7745162)",
-                  "Mathieu Perreault (7745140)",
-                  "Bryan Little (7745138)",
-                  "Cody Eakin (7745227)",
-                  "Drew Stafford (7745287)",
-                  "Ales Hemsky (7745299)",
-                  "Kris Russell (7745416)",
-                  "Jack Eichel (7745101)"]
+    date_for_lineup = datetime.datetime.today()# + datetime.timedelta(days=1)
+
+    lineup_type = "initial"
+    number_of_lineups = 15
 
     # Update game data, if needed
+    # update_player(db, 8479423)
     # update_game_info(db, "day_ago")
+    # calculate_expected_values(db)
 
     # calculate all lineups/entries
-    calculate_lineups(db, date_for_lineup, chosen_goalies, lineups_per_goalie, ir_players, "entry")
+    calculate_lineups(db, date_for_lineup, number_of_lineups, lineup_type)
 
     # Get statistics from previous night
-    calculate_statistics(db)
+    if lineup_type == "initial":
+        calculate_statistics(db)
 
     db.close()
