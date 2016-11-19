@@ -10,8 +10,8 @@ from player_game import PlayerGame
 
 __author__ = "jaredg"
 
-def drop_tables(db):
 
+def drop_tables(db):
     try:
         db.query('''DROP table team_stats''')
     except Exception as e:
@@ -24,8 +24,8 @@ def drop_tables(db):
         logging.error("Could not drop tables, got the following error:")
         logging.error(e)
 
-def create_team_stats(db):
 
+def create_team_stats(db):
     # Create team stats table
     # Based on NHL API: http://www.nhl.com/stats/rest/grouped/team/basic/season/teamsummary?cayenneExp=seasonId=20162017%20and%20gameTypeId=2
     db.query('''CREATE TABLE team_stats
@@ -51,6 +51,7 @@ def create_team_stats(db):
                   goalsAgainstPerGamePercentage number,
                   foreign key(teamId) references teams(id))''')
 
+
 def create_player_line_combinations(db):
     db.query('''CREATE TABLE player_line_combinations
                  (playerId integer primary key,
@@ -58,6 +59,7 @@ def create_player_line_combinations(db):
                   createdOn date,
                   updatedOn date,
                   foreign key (playerId) references players(id))''')
+
 
 def create_games_vegas_odds(db):
     db.query('''CREATE TABLE games_vegas_odds
@@ -70,11 +72,13 @@ def create_games_vegas_odds(db):
                   updatedOn date,
                   foreign key (gamePk) references games(gamePk))''')
 
+
 def create_player_games_expected_stats(db):
     # Create player games expected stats table
     db.query('''CREATE TABLE player_games_expected_stats
                  (playerId integer,
                   gamePk integer,
+                  opponentId integer,
                   goals number,
                   assists number,
                   shotsOnGoal number,
@@ -92,8 +96,8 @@ def create_player_games_expected_stats(db):
                   foreign key(gamePk) references games(gamePk),
                   foreign key(opponentId) references teams(id))''')
 
-def create_tables(db):
 
+def create_tables(db):
     # Create lineup combinations
     create_player_line_combinations(db)
 
@@ -105,8 +109,8 @@ def create_tables(db):
 
     create_player_games_expected_stats(db)
 
-def update_games_draftkings_points(db, update_date):
 
+def update_games_draftkings_points(db, update_date):
     # Draftkings point system:
     # Players will accumulate points as follows:
     #     Goal = +3 PTS
@@ -198,7 +202,6 @@ def update_games_draftkings_points(db, update_date):
 
 
 def update_team_stats(db, season):
-
     # Create team data
     url = "http://www.nhl.com/stats/rest/grouped/team/basic/season/teamsummary?cayenneExp=seasonId=" + season + "%20and%20gameTypeId=2"
     response = urllib.request.urlopen(url).read()
@@ -242,6 +245,7 @@ def get_player_id_by_name(db, playerName):
         logging.error(e)
         raise e
 
+
 def get_all_active_players(db):
     player_ids = []
 
@@ -259,12 +263,13 @@ def get_all_active_players(db):
         # db.rollback()
         raise e
 
-def update_line_combinations(db, force_update = False):
 
+def update_line_combinations(db, force_update=False):
     try:
         # Check if we've updated in the last 12 hours
         twelve_hours_ago = datetime.datetime.today() - datetime.timedelta(hours=12)
-        db.query("SELECT EXISTS(SELECT 1 FROM player_line_combinations WHERE updatedOn > ?) recentlyUpdated", (twelve_hours_ago,))
+        db.query("SELECT EXISTS(SELECT 1 FROM player_line_combinations WHERE updatedOn > ?) recentlyUpdated",
+                 (twelve_hours_ago,))
         if db.fetchone()['recentlyUpdated'] == 1 and force_update != True:
             logging.info("Skipping updating lineup combinations, recently updated....")
         else:
@@ -283,7 +288,7 @@ def update_line_combinations(db, force_update = False):
                         # Going to ignore powerplay lineups for now
                         position = td.get("id")
                         logging.debug(position)
-                        if position.startswith(("C","LW","RW","LD","RD","G","IR")) and td.a != None:
+                        if position.startswith(("C", "LW", "RW", "LD", "RD", "G", "IR")) and td.a != None:
                             playerName = td.a.img.get("alt")
                             logging.info("Setting " + str(playerName) + " to " + position)
                             playerId = get_player_id_by_name(db, playerName)
@@ -303,6 +308,7 @@ def update_line_combinations(db, force_update = False):
         db.rollback()
         raise e
 
+
 def get_implied_probability(american_odds):
     if american_odds < 0:
         positive_odds = -american_odds
@@ -310,19 +316,20 @@ def get_implied_probability(american_odds):
     else:
         return 100 / (american_odds + 100)
 
+
 def get_game_pk_by_names(db, home_name, visiting_name):
     try:
         db.query("select t.id from teams t where t.name = ? or t.teamName = ?", (home_name, home_name.split()[1]))
         for team in db.fetchall():
             home_team_id = team['id']
 
-        db.query("select t.id from teams t where t.name = ? or t.teamName = ?", (visiting_name, visiting_name.split()[1]))
+        db.query("select t.id from teams t where t.name = ? or t.teamName = ?",
+                 (visiting_name, visiting_name.split()[1]))
         for team in db.fetchall():
             away_team_id = team['id']
 
-
-        # Couldn't find the player, try their last name only
-        db.query("select g.gamePk from games g where homeTeamId = ? and awayTeamId = ?", (home_team_id, away_team_id))
+        # Find the latest gamePk with the given team names
+        db.query("select g.gamePk from games g where homeTeamId = ? and awayTeamId = ? order by gamePk desc", (home_team_id, away_team_id))
         for game in db.fetchall():
             return game['gamePk']
 
@@ -331,6 +338,7 @@ def get_game_pk_by_names(db, home_name, visiting_name):
         logging.error("Got the following error:")
         logging.error(e)
         raise e
+
 
 def get_all_active_player_ids(db):
     player_ids = []
@@ -349,6 +357,7 @@ def get_all_active_player_ids(db):
         # db.rollback()
         raise e
 
+
 def update_games_vegas_odds(db):
     # Check pinnacle for odds (use sportsubtype=Live%20NHL for in progress games)
     url = "http://xml.pinnaclesports.com/pinnaclefeed.aspx?sporttype=Hockey&sportsubtype=NHL%20OT%20Incl"
@@ -358,18 +367,25 @@ def update_games_vegas_odds(db):
 
             if participant.visiting_home_draw.string == "Home":
                 home_name = participant.participant_name.string
-                home_moneyline = event.periods.period.moneyline.moneyline_home.string # Find first moneyline, as second contains odds for 1st period
-                home_ip = get_implied_probability(int(home_moneyline))
             elif participant.visiting_home_draw.string == "Visiting":
                 visiting_name = participant.participant_name.string
-                visiting_moneyline = event.moneyline.moneyline_visiting.string
-                visiting_ip = get_implied_probability(int(visiting_moneyline))
             else:
                 raise ValueError("Unexpected visiting_home_draw string.")
 
-        if home_name == "Home Goals":
-            break
+        # Check for the total home/away goals bet and exit
+        if home_name == "Home Goals" or visiting_name == 'Away Goals':
+            continue
 
+        # Check for games which don't have odds yet
+        if event.periods.find("period") == None:
+            logging.info("No moneyline information, skipping for " + home_name + ", " + visiting_name)
+            continue
+
+        # Find first moneyline, as second contains odds for 1st period
+        home_moneyline = event.periods.period.moneyline.moneyline_home.string
+        home_ip = get_implied_probability(int(home_moneyline))
+        visiting_moneyline = event.moneyline.moneyline_visiting.string
+        visiting_ip = get_implied_probability(int(visiting_moneyline))
         total_p = home_ip + visiting_ip
         home_p = home_ip / total_p
         visiting_p = visiting_ip / total_p
@@ -379,15 +395,15 @@ def update_games_vegas_odds(db):
         over_adjust = event.periods.period.total.over_adjust.string
         under_adjust = event.periods.period.total.under_adjust.string
 
-        logging.info("Home name: " + home_name)
-        logging.info("Visiting name: " + visiting_name)
-        logging.info("Home moneyline: " + home_moneyline)
-        logging.info("Visiting moneyline: " + visiting_moneyline)
-        logging.info("Home probability: " + str(home_p))
-        logging.info("Visiting probability: " + str(visiting_p))
-        logging.info("Total points (goals): " + str(total_points))
-        logging.info(over_adjust)
-        logging.info(under_adjust)
+        logging.debug("Home name: " + home_name)
+        logging.debug("Visiting name: " + visiting_name)
+        logging.debug("Home moneyline: " + home_moneyline)
+        logging.debug("Visiting moneyline: " + visiting_moneyline)
+        logging.debug("Home probability: " + str(home_p))
+        logging.debug("Visiting probability: " + str(visiting_p))
+        logging.debug("Total points (goals): " + str(total_points))
+        logging.debug(over_adjust)
+        logging.debug(under_adjust)
 
         gamePk = get_game_pk_by_names(db, home_name, visiting_name)
 
@@ -399,79 +415,224 @@ def update_games_vegas_odds(db):
                   visitingProbability,
                   totalPoints,
                   updatedOn) VALUES(?,?,?,?,?,?,?)''',
-                 (gamePk, home_moneyline, visiting_moneyline, home_p, visiting_p, total_points, datetime.datetime.today()))
+                 (gamePk, home_moneyline, visiting_moneyline, home_p, visiting_p, total_points,
+                  datetime.datetime.today()))
 
 
-def get_expected_goals(playerGame):
-    return 0
+def get_expected_skater_stats(db, playerGame):
+    skater_stats = {"goals": 0,
+                    "assists": 0,
+                    "shots_on_goal": 0,
+                    "blocked_shots": 0,
+                    "short_handed_points": 0,
+                    "shootout_goals": 0,
+                    "hat_tricks": 0}
 
-def get_expected_assists(playerGame):
-    return 0
+    if playerGame.get_primary_position() == "G":
+        return skater_stats
 
-def get_expected_shots_on_goal(playerGame):
-    return 0
+    playerId = playerGame.get_player_id()
+    try:
+        logging.debug("Getting player value for " + str(playerId))
+        # Find average points for last week and for the year
+        db.query('''select ifnull(avg(case when g.gamePk like '2015%' then pgss.goals else null end),0) AS average_goals_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then pgss.goals else null end),0) AS average_goals_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then pgss.goals else null end),0) AS average_goals_last_two_weeks,
+                           ifnull(avg(case when g.gamePk like '2015%' then pgss.assists else null end),0) AS average_assists_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then pgss.assists else null end),0) AS average_assists_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then pgss.assists else null end),0) AS average_assists_last_two_weeks,
+                           ifnull(avg(case when g.gamePk like '2015%' then pgss.shots else null end),0) AS average_shots_on_goal_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then pgss.shots else null end),0) AS average_shots_on_goal_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then pgss.shots else null end),0) AS average_shots_on_goal_last_two_weeks,
+                           ifnull(avg(case when g.gamePk like '2015%' then pgss.blocked else null end),0) AS average_blocked_shots_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then pgss.blocked else null end),0) AS average_blocked_shots_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then pgss.blocked else null end),0) AS average_blocked_shots_last_two_weeks,
+                           ifnull(avg(case when g.gamePk like '2015%' then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_short_handed_points_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_short_handed_points_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_short_handed_points_last_two_weeks,
+                           0 average_shootout_goals_last_year,
+                           0 average_shootout_goals_this_year,
+                           0 average_shootout_goals_last_two_weeks,
+                           ifnull(avg(case when g.gamePk like '2015%' then (case when pgss.goals >= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then (case when pgss.goals >= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then (case when pgss.goals >= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_last_two_weeks,
+                           count(case when g.gamePk like '2015%' then 1 else null end) as games_last_year,
+                           count(case when g.gamePk like '2016%' then 1 else null end) as games_this_year,
+                           count(case when g.gameDate > date('now','-14 day') then 1 else null end) AS games_last_two_weeks
+                    from player_games_skater_stats pgss
+                    inner join games g
+                    on pgss.gamePk = g.gamePk
+                    where playerId = ? and
+                          (g.gamePk like '2016%' or g.gamePk like '2015%')''', (playerId,))
+        value = 0
+        for player_stats in db.fetchall():
+            # Calculate value (ignore players that haven't played a game this year)
+            if player_stats['games_this_year'] != 0:
+                # Calculate total games (will be over one due to last two weeks, but want to find the ratio for each stat)
+                total_games = player_stats['games_last_year'] + player_stats['games_this_year'] + player_stats['games_last_two_weeks']
+                games_last_year_ratio = player_stats['games_last_year'] / total_games
+                games_this_year_ratio = player_stats['games_this_year'] / total_games
+                games_last_two_weeks_ratio = player_stats['games_last_two_weeks'] / total_games
+                logging.debug("Total games last year is " + str(player_stats['games_last_year']))
+                logging.debug("Total games this year is " + str(player_stats['games_this_year']))
+                logging.debug("Total games last two weeks is " + str(player_stats['games_last_two_weeks']))
 
-def get_expected_blocked_shots(playerGame):
-    return 0
+                # Loop through and get an adjusted value based on each time interval
+                for key, value in skater_stats.items():
+                    skater_stats[key] = games_last_year_ratio * player_stats['average_' + key + '_last_year'] + \
+                                        games_this_year_ratio * player_stats['average_' + key + '_this_year'] + \
+                                        games_last_two_weeks_ratio * player_stats['average_' + key + '_last_two_weeks']
+                    logging.debug("For player id " + str(playerId) + ": " + key + " = " + str(skater_stats[key]) + "")
 
-def get_expected_short_handed_points(playerGame):
-    return 0
+        return skater_stats
 
-def get_expected_shootout_goals(playerGame):
-    return 0
+    except Exception as e:
+        logging.error("Could not get skater expected stats.")
+        logging.error("Got the following error:")
+        logging.error(e)
+        # Roll back any change if something goes wrong
+        # db.rollback()
+        raise e
 
-def get_expected_hat_tricks(playerGame):
-    return 0
 
-def get_expected_wins(playerGame):
-    return 0
+def get_expected_goalie_stats(db, playerGame):
+    goalie_stats = {"wins": 0,
+                    "saves": 0,
+                    "goals_against": 0,
+                    "shutouts": 0,
+                    "goals" : 0,
+                    "assists" : 0}
 
-def get_expected_saves(playerGame):
-    return 0
+    if playerGame.get_primary_position() != "G":
+        return goalie_stats
 
-def get_expected_goals_against(playerGame):
-    return 0
+    playerId = playerGame.get_player_id()
+    try:
+        logging.debug("Getting player value for " + str(playerId))
+        # Find average points for last week and for the year
+        db.query('''select ifnull(avg(case when g.gamePk like '2015%' then (case when pggs.decision = "W" then 1 else 0 end) else null end),0) AS average_wins_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then (case when pggs.decision = "W" then 1 else 0 end) else null end),0) AS average_wins_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then (case when pggs.decision = "W" then 1 else 0 end) else null end),0) AS average_wins_last_two_weeks,
+                           ifnull(avg(case when g.gamePk like '2015%' then pggs.saves else null end),0) AS average_saves_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then pggs.saves else null end),0) AS average_saves_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then pggs.saves else null end),0) AS average_saves_last_two_weeks,
+                           ifnull(avg(case when g.gamePk like '2015%' then pggs.shots - pggs.saves else null end),0) AS average_goals_against_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then pggs.shots - pggs.saves else null end),0) AS average_goals_against_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then pggs.shots - pggs.saves else null end),0) AS average_goals_against_last_two_weeks,
+                           ifnull(avg(case when g.gamePk like '2015%' then (case when pggs.decision = "W" and pggs.shots = pggs.saves and pggs.timeOnIce > "59:30" then 1 else 0 end) else null end),0) AS average_shutouts_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then (case when pggs.decision = "W" and pggs.shots = pggs.saves and pggs.timeOnIce > "59:30" then 1 else 0 end) else null end),0) AS average_shutouts_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then (case when pggs.decision = "W" and pggs.shots = pggs.saves and pggs.timeOnIce > "59:30" then 1 else 0 end) else null end),0) AS average_shutouts_last_two_weeks,
+                           ifnull(avg(case when g.gamePk like '2015%' then pggs.goals else null end),0) AS average_goals_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then pggs.goals else null end),0) AS average_goals_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then pggs.goals else null end),0) AS average_goals_last_two_weeks,
+                           ifnull(avg(case when g.gamePk like '2015%' then pggs.assists else null end),0) AS average_assists_last_year,
+                           ifnull(avg(case when g.gamePk like '2016%' then pggs.assists else null end),0) AS average_assists_this_year,
+                           ifnull(avg(case when g.gameDate > date('now','-14 day') then pggs.assists else null end),0) AS average_assists_last_two_weeks,
+                           count(case when g.gamePk like '2015%' then 1 else null end) as games_last_year,
+                           count(case when g.gamePk like '2016%' then 1 else null end) as games_this_year,
+                           count(case when g.gameDate > date('now','-14 day') then 1 else null end) AS games_last_two_weeks
+                    from player_games_goalie_stats pggs
+                    inner join games g
+                    on pggs.gamePk = g.gamePk
+                    where pggs.playerId = ? and
+                          (g.gamePk like '2016%' or g.gamePk like '2015%')''', (playerId,))
+        value = 0
+        for player_stats in db.fetchall():
+            # Calculate value (ignore players that haven't played a game this year)
+            if player_stats['games_this_year'] != 0:
+                # Calculate total games (will be over one due to last two weeks, but want to find the ratio for each stat)
+                total_games = player_stats['games_last_year'] + player_stats['games_this_year'] + player_stats['games_last_two_weeks']
+                games_last_year_ratio = player_stats['games_last_year'] / total_games
+                games_this_year_ratio = player_stats['games_this_year'] / total_games
+                games_last_two_weeks_ratio = player_stats['games_last_two_weeks'] / total_games
+                logging.debug("Total games last year is " + str(player_stats['games_last_year']))
+                logging.debug("Total games this year is " + str(player_stats['games_this_year']))
+                logging.debug("Total games last two weeks is " + str(player_stats['games_last_two_weeks']))
 
-def get_expected_shutouts(playerGame):
-    return 0
+                # Loop through and get an adjusted value based on each time interval
+                for key, value in goalie_stats.items():
+                    goalie_stats[key] = games_last_year_ratio * player_stats['average_' + key + '_last_year'] + \
+                                        games_this_year_ratio * player_stats['average_' + key + '_this_year'] + \
+                                        games_last_two_weeks_ratio * player_stats['average_' + key + '_last_two_weeks']
+                    logging.debug("For player id " + str(playerId) + ": " + key + " = " + str(goalie_stats[key]) + "")
 
-def update_expected_values(db):
-    active_players = get_all_active_player_ids(db)
-    for active_player_id in active_players:
+        return goalie_stats
 
-        playerGame = PlayerGame(db, active_player_id)
-        expectedStatsList = [playerGame.get_player_id(),
-                             playerGame.get_game_pk(),
-                             get_expected_goals(playerGame),
-                             get_expected_assists(playerGame),
-                             get_expected_shots_on_goal(playerGame),
-                             get_expected_blocked_shots(playerGame),
-                             get_expected_short_handed_points(playerGame),
-                             get_expected_shootout_goals(playerGame),
-                             get_expected_hat_tricks(playerGame),
-                             get_expected_wins(playerGame),
-                             get_expected_saves(playerGame),
-                             get_expected_goals_against(playerGame),
-                             get_expected_shutouts(playerGame),
-                             datetime.datetime.today()]
-        db.query('''insert or replace into player_games_expected_stats
-                     (playerId integer,
-                      gamePk integer,
-                      goals number,
-                      assists number,
-                      shotsOnGoal number,
-                      blockedShots number,
-                      shortHandedPoints number,
-                      shootoutGoals number,
-                      hatTricks number,
-                      wins number,
-                      saves number,
-                      goalsAgainst number,
-                      shutouts number,
-                      updatedOn date), values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', expectedStatsList)
+    except Exception as e:
+        logging.error("Could not get goalie expected stats.")
+        logging.error("Got the following error:")
+        logging.error(e)
+        # Roll back any change if something goes wrong
+        # db.rollback()
+        raise e
+
+    return goalie_stats
+
+
+def update_expected_stats(db, force_update=False):
+    try:
+        # Check if we've updated in the last 12 hours
+        twelve_hours_ago = datetime.datetime.today() - datetime.timedelta(hours=12)
+        db.query("SELECT EXISTS(SELECT 1 FROM player_games_expected_stats WHERE updatedOn > ?) recentlyUpdated",
+                 (twelve_hours_ago,))
+        if db.fetchone()['recentlyUpdated'] == 1 and force_update != True:
+            logging.info("Skipping updating expected stats, recently updated....")
+        else:
+            active_players = get_all_active_player_ids(db)
+            for active_player_id in active_players:
+                playerGame = PlayerGame(db, active_player_id)
+                skater_stats = get_expected_skater_stats(db, playerGame)
+                goalie_stats = get_expected_goalie_stats(db, playerGame)
+
+                if playerGame.get_primary_position() == "G":
+                    goals = goalie_stats['goals']
+                    assists = goalie_stats['assists']
+                else:
+                    goals = skater_stats['goals']
+                    assists = skater_stats['assists']
+
+                expectedStatsList = [playerGame.get_player_id(),
+                                     playerGame.get_game_pk(),
+                                     playerGame.get_opponent_id(),
+                                     goals,
+                                     assists,
+                                     skater_stats['shots_on_goal'],
+                                     skater_stats['blocked_shots'],
+                                     skater_stats['short_handed_points'],
+                                     skater_stats['shootout_goals'],
+                                     skater_stats['hat_tricks'],
+                                     goalie_stats['wins'],
+                                     goalie_stats['saves'],
+                                     goalie_stats['goals_against'],
+                                     goalie_stats['shutouts'],
+                                     datetime.datetime.today()]
+                db.query('''insert or replace into player_games_expected_stats
+                                 (playerId,
+                                  gamePk,
+                                  opponentId,
+                                  goals,
+                                  assists,
+                                  shotsOnGoal,
+                                  blockedShots,
+                                  shortHandedPoints,
+                                  shootoutGoals,
+                                  hatTricks,
+                                  wins,
+                                  saves,
+                                  goalsAgainst,
+                                  shutouts,
+                                  updatedOn) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', expectedStatsList)
+
+    except Exception as e:
+        logging.error("Could not update expected stats.")
+        logging.error("Got the following error:")
+        logging.error(e)
+        # Roll back any change if something goes wrong
+        # db.rollback()
+        raise e
+
 
 def calculate_expected_values(db):
-
     # Update team stats
     update_team_stats(db, "20162017")
 
@@ -481,6 +642,6 @@ def calculate_expected_values(db):
     # Update vegas lines
     update_games_vegas_odds(db)
 
-    update_expected_values(db)
+    update_expected_stats(db, True)
 
     db.commit()

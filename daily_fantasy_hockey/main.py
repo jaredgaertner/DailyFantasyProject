@@ -28,7 +28,7 @@ if __name__ == '__main__':
     db = database()
 
     logging.debug("Hardcoding date and goalies for the lineup....")
-    date_for_lineup = datetime.datetime.today()# + datetime.timedelta(days=1)
+    date_for_lineup = datetime.datetime.today() + datetime.timedelta(days=1)
 
     lineup_type = "initial"
     number_of_lineups = 15
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     # Update game data, if needed
     # update_player(db, 8479423)
     # update_game_info(db, "day_ago")
-    # calculate_expected_values(db)
+    calculate_expected_values(db)
 
     # calculate all lineups/entries
     calculate_lineups(db, date_for_lineup, number_of_lineups, lineup_type)

@@ -41,20 +41,18 @@ def get_starting_goalies(db, date_for_lineup):
                 status = row.dl.dt.string
                 logging.info("Status: " + str(status))
 
-                starting_goalies.append(row.h5.a.string)
+                starting_goalies.append(goalie_name)
 
-                # Not currently needed, as only shows goalies which aren't confirmed
-                # # Else, we need to look at the document.write statement
-                # else:
-                #     logging.debug(row)
-                #     match = re.search(r"document\.write\(\"(.+)\"\)", str(row))
-                #     logging.info(match.group(1))
-                #     goalie_info = BeautifulSoup(match.group(1), "html.parser")
-                #     logging.info(goalie_info)
-                #     goalie_name = goalie_info.h5.a.string
-                #     logging.info("Goalie name: " + str(goalie_name))
-                #     status = goalie_info.dl.dt.string
-                #     logging.info("Status: " + str(status))
+            # Not currently needed, as only shows goalies which aren't confirmed
+            # Else, we need to look at the document.write statement
+            else:
+                match = re.search(r"document\.write\(\"(.+)\"\)", str(row))
+                goalie_info = BeautifulSoup(match.group(1), "html.parser")
+                goalie_name = goalie_info.h5.a.string
+                logging.info("Goalie name: " + str(goalie_name))
+                status = goalie_info.dl.dt.string
+                logging.info("Status: " + str(status))
+                starting_goalies.append(goalie_name)
 
         return starting_goalies
 

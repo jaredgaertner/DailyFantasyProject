@@ -23,13 +23,13 @@ def drop_tables(db):
         logging.error(e)
 
     try:
-        db.query('''DROP table games_players_goalie_stats''')
+        db.query('''DROP table player_games_goalie_stats''')
     except Exception as e:
         logging.error("Could not drop tables, got the following error:")
         logging.error(e)
 
     try:
-        db.query('''DROP table games_players_skater_stats''')
+        db.query('''DROP table player_games_skater_stats''')
     except Exception as e:
         logging.error("Could not drop tables, got the following error:")
         logging.error(e)
@@ -229,10 +229,10 @@ def create_tables(db):
 
     # Create skater stats table
     # Based on NHL API: https://statsapi.web.nhl.com/api/v1/game/2015020051/feed/live, under liveData -> boxScore -> teams -> away/home -> players -> IDXXXXXX -> stats -> skaterStats
-    db.query('''CREATE TABLE games_players_skater_stats
-                 (gamePk number,
+    db.query('''CREATE TABLE player_games_skater_stats
+                 (playerId number,
+                  gamePk number,
                   teamId number,
-                  playerId number,
                   timeOnIce text,
                   assists number,
                   goals number,
@@ -257,10 +257,10 @@ def create_tables(db):
 
     # Create goalie stats table
     # Based on NHL API: https://statsapi.web.nhl.com/api/v1/game/2015020051/feed/live, under liveData -> boxScore -> teams -> away/home -> players -> IDXXXXXX -> stats -> goaliestats
-    db.query('''CREATE TABLE games_players_goalie_stats
-                 (gamePk number,
+    db.query('''CREATE TABLE player_games_goalie_stats
+                 (playerId number,
+                  gamePk number,
                   teamId number,
-                  playerId number,
                   timeOnIce text,
                   assists number,
                   goals number,
@@ -280,11 +280,11 @@ def create_tables(db):
     # Fantasy points, based on Draftkings point values
     db.query('''CREATE TABLE games_draftkings_points
                  (gamePk number,
-                 playerId number,
-                 points number,
-                 primary key (gamePk, playerId),
-                 foreign key (gamePk) references games(gamePk),
-                 foreign key (playerId) references players(id))''')
+                  playerId number,
+                  points number,
+                  primary key (gamePk, playerId),
+                  foreign key (gamePk) references games(gamePk),
+                  foreign key (playerId) references players(id))''')
 
     # Picked lineups and results
     create_daily_draftkings_lineups(db)
@@ -425,14 +425,14 @@ def update_players(db, update_date):
     # Loop through all games in DB
     db.query('''SELECT DISTINCT gpss.playerId
                 FROM games g
-                LEFT JOIN games_players_skater_stats gpss ON g.gamePk = gpss.gamePk
+                LEFT JOIN player_games_skater_stats gpss ON g.gamePk = gpss.gamePk
                 WHERE g.gameDate > ?
 
                 UNION ALL
 
                 SELECT DISTINCT gpgs.playerId
                 FROM games g
-                LEFT JOIN games_players_goalie_stats gpgs ON g.gamePk = gpgs.gamePk
+                LEFT JOIN player_games_goalie_stats gpgs ON g.gamePk = gpgs.gamePk
                 WHERE g.gameDate > ?''', (update_date, update_date))
     for players in db.fetchall():
         playerId = players['playerId']
@@ -484,7 +484,7 @@ def update_games_players_skaters_stats(db, update_date):
                                      player['stats']['skaterStats']['powerPlayTimeOnIce'],
                                      player['stats']['skaterStats']['shortHandedTimeOnIce']]
 
-                        db.query('''INSERT or REPLACE INTO games_players_skater_stats
+                        db.query('''INSERT or REPLACE INTO player_games_skater_stats
                                  (gamePk,
                                   teamId,
                                   playerId,
@@ -544,7 +544,7 @@ def update_games_players_skaters_stats(db, update_date):
                                      player['stats']['skaterStats']['powerPlayTimeOnIce'],
                                      player['stats']['skaterStats']['shortHandedTimeOnIce']]
 
-                        db.query('''INSERT or REPLACE INTO games_players_skater_stats
+                        db.query('''INSERT or REPLACE INTO player_games_skater_stats
                                  (gamePk,
                                   teamId,
                                   playerId,
@@ -578,8 +578,9 @@ def update_games_players_skaters_stats(db, update_date):
                         # raise e
 
 
-def update_games_players_goalie_stats(db, update_date):
-
+def update_player_games_goalie_stats(db, update_date):
+    # TODO: Potentially switch to game log data and season stats by person?
+    #   https://statsapi.web.nhl.com/api/v1/people/8471679?expand=person.stats&stats=gameLog,careerRegularSeason&expand=stats.team&site=en_nhlCA
     # Update goalie stats data
     # Loop through all games in DB
     db.query('''SELECT gamePk, awayTeamId, homeTeamId FROM games WHERE gameDate > ?''', (update_date,))
@@ -615,7 +616,7 @@ def update_games_players_goalie_stats(db, update_date):
                                      player['stats']['goalieStats']['evenShotsAgainst'],
                                      player['stats']['goalieStats']['powerPlayShotsAgainst'],
                                      player['stats']['goalieStats']['decision']]
-                        db.query('''INSERT or REPLACE INTO games_players_goalie_stats
+                        db.query('''INSERT or REPLACE INTO player_games_goalie_stats
                                  (gamePk,
                                   teamId,
                                   playerId,
@@ -662,7 +663,7 @@ def update_games_players_goalie_stats(db, update_date):
                                      player['stats']['goalieStats']['powerPlayShotsAgainst'],
                                      player['stats']['goalieStats']['decision']]
 
-                        db.query('''INSERT or REPLACE INTO games_players_goalie_stats
+                        db.query('''INSERT or REPLACE INTO player_games_goalie_stats
                                  (gamePk,
                                   teamId,
                                   playerId,
@@ -714,7 +715,7 @@ def update_games_draftkings_points(db, update_date):
     # Player stats
     db.query('''SELECT gpss.*
                 FROM games g
-                LEFT JOIN games_players_skater_stats gpss ON g.gamePk = gpss.gamePk
+                LEFT JOIN player_games_skater_stats gpss ON g.gamePk = gpss.gamePk
                 WHERE g.gameDate > ?''', (update_date,))
     for player_stats in db.fetchall():
         try:
@@ -744,7 +745,7 @@ def update_games_draftkings_points(db, update_date):
     # Goalie stats
     db.query('''SELECT gpgs.*
                 FROM games g
-                LEFT JOIN games_players_goalie_stats gpgs ON g.gamePk = gpgs.gamePk
+                LEFT JOIN player_games_goalie_stats gpgs ON g.gamePk = gpgs.gamePk
                 WHERE g.gameDate > ?''', (update_date,))
     for goalie_stats in db.fetchall():
         try:
@@ -819,7 +820,7 @@ def update_game_info(db, update_type = "week_ago"):
 
     update_games(db, update_as_of, datetime.date.today() + datetime.timedelta(days=1))
     update_games_players_skaters_stats(db, update_as_of)
-    update_games_players_goalie_stats(db, update_as_of)
+    update_player_games_goalie_stats(db, update_as_of)
     update_players(db, update_as_of)
 
     # Find point values
