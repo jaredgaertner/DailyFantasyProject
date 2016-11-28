@@ -71,14 +71,14 @@ class PlayerGame(Player, Game):
         try:
             logging.debug(
                 "Getting player gamePk for player ID: " + str(self._playerId))  # + " on " + str(date_for_lineup))
-            # Check for games that aren't finished (statusCode == 7), as future games aren't loaded in
+            # TODO: Should I check for games that aren't finished (statusCode == 7), as future games aren't loaded in?
+            # Get most recent gamePk for the player
             self._db.query('''select g.gamePk
                            from players p
                           inner join games g
                              on (p.currentTeamId = g.awayTeamId or
                                  p.currentTeamId = g.homeTeamId)
-                          where p.id = ? and
-                                g.statusCode != 7
+                          where p.id = ?
 
                             union all
 
@@ -87,8 +87,8 @@ class PlayerGame(Player, Game):
                           inner join games g
                              on (p.currentTeamId = g.awayTeamId or
                                  p.currentTeamId = g.homeTeamId)
-                          where p.id = ? and
-                                g.statusCode != 7''',
+                          where p.id = ?
+                          order by gamePk desc''',
                            (self._playerId, self._playerId,))  # , date_for_lineup, player_id, date_for_lineup,))
             for player in self._db.fetchall():
                 return player['gamePk']
@@ -102,8 +102,7 @@ class PlayerGame(Player, Game):
                               inner join games g
                                  on (p.currentTeamId = g.awayTeamId or
                                      p.currentTeamId = g.homeTeamId)
-                              where p.id = ? and
-                                    g.statusCode != 7
+                              where p.id = ?
 
                                 union all
 
@@ -112,8 +111,8 @@ class PlayerGame(Player, Game):
                               inner join games g
                                  on (p.currentTeamId = g.awayTeamId or
                                      p.currentTeamId = g.homeTeamId)
-                              where p.id = ? and
-                                    g.statusCode != 7''',
+                              where p.id = ?
+                              order by gamePk desc''',
                                (self._playerId, self._playerId,))  # , date_for_lineup, player_id, date_for_lineup,))
                 for player in self._db.fetchall():
                     return player['gamePk']

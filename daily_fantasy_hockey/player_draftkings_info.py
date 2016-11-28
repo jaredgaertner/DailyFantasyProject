@@ -230,7 +230,7 @@ class PlayerDraftKingsInfo(PlayerGame):
                     'hatTricks'] + 3 * stats['wins'] + 0.2 * stats['saves'] - 1 * stats['goalsAgainst'] + 2 * stats[
                     'shutouts']
 
-            logging.warning("Couldn't find a value for " + str(self._playerId))
+            # logging.warning("Couldn't find a value for " + str(self._playerId))
             return 0
 
         except Exception as e:

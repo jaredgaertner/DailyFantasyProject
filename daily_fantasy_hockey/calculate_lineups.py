@@ -306,8 +306,8 @@ def calculate_lineups(db, date_for_lineup, number_of_lineups, lineup_type="initi
 
             for goalie in goalies:
                 if goalie.get_name_and_id() in calculated_set_of_players[0]:
-                    logging.info("Lowering value of " + str(goalie.get_name_and_id()) + " by 0.1.")
-                    goalie.add_value(-0.1)
+                    logging.info("Lowering value of " + str(goalie.get_name_and_id()) + " by 0.25.")
+                    goalie.add_value(-0.25)
 
             # Write top lineup to csv
             writer.writerow(calculated_set_of_players[0][:9])

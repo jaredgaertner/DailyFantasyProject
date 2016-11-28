@@ -789,9 +789,9 @@ def get_player_id_by_name(db, playerName):
             return player['id']
 
         # Couldn't find the player, try their last name only
-        db.query("select p.id from players p where lower(p.lastName) = lower(?)", (playerName.split()[1],))
-        for player in db.fetchall():
-            return player['id']
+        # db.query("select p.id from players p where lower(p.lastName) = lower(?)", (playerName.split()[1],))
+        # for player in db.fetchall():
+        #     return player['id']
 
     except Exception as e:
         logging.error("Could not find player ID for " + playerName)

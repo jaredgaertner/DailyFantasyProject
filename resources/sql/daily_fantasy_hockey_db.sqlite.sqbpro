@@ -1,1 +1,29 @@
-<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="C:/Users/jared_000/Documents/DailyFantasyProject/resources/sql/daily_fantasy_hockey_db.sqlite"/><window><current_tab id="0"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="4595"/><expanded_item id="0" parent="-1"/><expanded_item id="1" parent="-1"/><expanded_item id="2" parent="-1"/><expanded_item id="3" parent="-1"/></tab_structure><tab_browse><current_table name=""/><default_encoding codec=""/><browsetable_info data="AAAAAf////+Y60DQAAB/9wAAAAAAAAAAAAAAAP//////"/></tab_browse><tab_sql><sql name="SQL 1"></sql><current_tab id="0"/></tab_sql></sqlb_project>
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="C:/Users/Jared/Documents/DailyFantasyProject/resources/sql/daily_fantasy_hockey_db.sqlite"/><window><current_tab id="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="4595"/><expanded_item id="0" parent="-1"/><expanded_item id="1" parent="-1"/><expanded_item id="2" parent="-1"/><expanded_item id="3" parent="-1"/></tab_structure><tab_browse><current_table name="player_games_expected_stats"/><default_encoding codec=""/><browsetable_info data="AAAABgAAAA4AcABsAGEAeQBlAHIAc/cqaxAAAAIfAAAAAAAAAAAAAAAAAP////8AAAAyAHAAbABhAHkAZQByAF8AZwBhAG0AZQBzAF8AcwBrAGEAdABlAHIAXwBzAHQAYQB0AHP3lGWwAAACHwAAAAAAAAAAAAAAAAD/////AAAANgBwAGwAYQB5AGUAcgBfAGcAYQBtAGUAcwBfAGUAeABwAGUAYwB0AGUAZABfAHMAdABhAHQAc+5pYUAAAAIfAAAAAAAAAAAAAAAAAP////8AAAA0AGcAYQBtAGUAcwBfAHAAbABhAHkAZQByAHMAXwBzAGsAYQB0AGUAcgBfAHMAdABhAHQAc+4ofLAAAAIfAAAAAAAAAAAAAAAAAP////8AAAAwAGQAYQBpAGwAeQBfAGQAcgBhAGYAdABrAGkAbgBnAHMAXwBlAG4AdAByAGkAZQBz7fV0sAAAAh8AAAAAAAAAAQAAAAgAAAAAAAAAAAD//////////5jrQNAAAH/3AAAAAAAAAAAAAAAAAf////8="/></tab_browse><tab_sql><sql name="SQL 1">select ifnull(avg(case when g.gamePk like '2015%' then pgss.goals else null end),0) AS average_goals_last_year,
+       ifnull(avg(case when g.gamePk like '2016%' then pgss.goals else null end),0) AS average_goals_this_year,
+       ifnull(avg(case when g.gameDate &gt; date('now','-14 day') then pgss.goals else null end),0) AS average_goals_last_two_weeks,
+       ifnull(avg(case when g.gamePk like '2015%' then pgss.assists else null end),0) AS average_assists_last_year,
+       ifnull(avg(case when g.gamePk like '2016%' then pgss.assists else null end),0) AS average_assists_this_year,
+       ifnull(avg(case when g.gameDate &gt; date('now','-14 day') then pgss.assists else null end),0) AS average_assists_last_two_weeks,
+       ifnull(avg(case when g.gamePk like '2015%' then pgss.shots else null end),0) AS average_shots_last_year,
+       ifnull(avg(case when g.gamePk like '2016%' then pgss.shots else null end),0) AS average_shots_this_year,
+       ifnull(avg(case when g.gameDate &gt; date('now','-14 day') then pgss.shots else null end),0) AS average_shots_last_two_weeks,	   
+       ifnull(avg(case when g.gamePk like '2015%' then pgss.blocked else null end),0) AS average_blocks_last_year,
+       ifnull(avg(case when g.gamePk like '2016%' then pgss.blocked else null end),0) AS average_blocks_this_year,
+       ifnull(avg(case when g.gameDate &gt; date('now','-14 day') then pgss.blocked else null end),0) AS average_blocks_last_two_weeks,	   
+       ifnull(avg(case when g.gamePk like '2015%' then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_shp_last_year,
+       ifnull(avg(case when g.gamePk like '2016%' then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_shp_this_year,
+       ifnull(avg(case when g.gameDate &gt; date('now','-14 day') then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_shp_last_two_weeks,	
+       0 average_shootout_goals_last_year,
+       0 average_shootout_goals_this_year,
+       0 average_shootout_goals_last_two_weeks,
+       ifnull(avg(case when g.gamePk like '2015%' then (case when pgss.goals &gt;= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_last_year,
+       ifnull(avg(case when g.gamePk like '2016%' then (case when pgss.goals &gt;= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_this_year,
+       ifnull(avg(case when g.gameDate &gt; date('now','-14 day') then (case when pgss.goals &gt;= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_last_two_weeks,		   
+       count(case when g.gamePk like '2015%' then 1 else null end) as games_last_year,
+       count(case when g.gamePk like '2016%' then 1 else null end) as games_this_year,
+       count(case when g.gameDate &gt; date('now','-14 day') then 1 else null end) AS games_last_two_weeks
+from player_games_skater_stats pgss
+inner join games g
+on pgss.gamePk = g.gamePk
+where playerId = 8474141 and
+	  (g.gamePk like '2016%' or g.gamePk like '2015%')</sql><sql name="SQL 3"></sql><current_tab id="0"/></tab_sql></sqlb_project>

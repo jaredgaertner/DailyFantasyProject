@@ -64,11 +64,13 @@ def create_player_line_combinations(db):
 def create_games_vegas_odds(db):
     db.query('''CREATE TABLE games_vegas_odds
                  (gamePk integer primary key,
+                  homeTeamId integer,
                   homeMoneyline text,
-                  visitingMoneyline text,
                   homeProbability number,
-                  visitingProbability number,
-                  totalPoints,
+                  awayTeamId integer,
+                  awayMoneyline text,
+                  awayProbability number,
+                  numberOfGoals number,
                   updatedOn date,
                   foreign key (gamePk) references games(gamePk))''')
 
@@ -108,97 +110,6 @@ def create_tables(db):
     create_games_vegas_odds(db)
 
     create_player_games_expected_stats(db)
-
-
-def update_games_draftkings_points(db, update_date):
-    # Draftkings point system:
-    # Players will accumulate points as follows:
-    #     Goal = +3 PTS
-    #     Assist = +2 PTS
-    #     Shot on Goal = +0.5 PTS
-    #     Blocked Shot = +0.5 PTS
-    #     Short Handed Point Bonus (Goal/Assist) = +1 PTS
-    #     Shootout Goal = +0.2 PTS
-    #     Hat Trick Bonus = +1.5 PTS
-    #
-    # Goalies only will accumulate points as follows:
-    #     Win = +3 PTS
-    #     Save = +0.2 PTS
-    #     Goal Against = -1 PTS
-    #     Shutout Bonus = +2 PTS
-    #     Goalie Scoring Notes:
-    #     Goalies WILL receive points for all stats they accrue, including goals and assists.
-    #     The Goalie Shutout Bonus is credited to goalies if they complete the entire game with 0 goals allowed in regulation + overtime. Shootout goals will not prevent a shutout. Goalie must complete the entire game to get credit for a shutout.
-
-    # Create points data
-    # Player stats
-    db.query('''SELECT gpss.*
-                FROM games g
-                LEFT JOIN games_players_skater_stats gpss ON g.gamePk = gpss.gamePk
-                WHERE g.gameDate > ?''', (update_date,))
-    for player_stats in db.fetchall():
-        try:
-            gamePk = player_stats['gamePk']
-            playerId = player_stats['playerId']
-            points = player_stats["goals"] * 3 + player_stats["assists"] * 2 + player_stats["shots"] * 0.5 + \
-                     player_stats["blocked"] * 0.5 + player_stats["shortHandedGoals"] + player_stats[
-                         "shortHandedAssists"]  # + player_stats["Shootout"] * 0.2
-            if player_stats["goals"] >= 3:
-                points += 1.5
-
-            logging.info("Updating player " + str(playerId) + " draftkings stats for game ID: " + str(gamePk))
-            db.query('''INSERT or REPLACE INTO games_draftkings_points
-                     (gamePk,
-                      playerId,
-                      points) VALUES(?,?,?)''', (gamePk, playerId, points))
-
-        except Exception as e:
-            logging.error("Could not insert the following player points for DraftKings:")
-            logging.error(player_stats)
-            logging.error("Got the following error:")
-            logging.error(e)
-            # Roll back any change if something goes wrong
-            # db.rollback()
-            # raise e
-
-    # Goalie stats
-    db.query('''SELECT gpgs.*
-                FROM games g
-                LEFT JOIN games_players_goalie_stats gpgs ON g.gamePk = gpgs.gamePk
-                WHERE g.gameDate > ?''', (update_date,))
-    for goalie_stats in db.fetchall():
-        try:
-            gamePk = goalie_stats['gamePk']
-            playerId = goalie_stats['playerId']
-
-            goals_against = (goalie_stats["shots"] - goalie_stats["saves"])
-            points = goalie_stats["saves"] * 0.2 - goals_against + goalie_stats["goals"] * 3 + goalie_stats[
-                                                                                                   "assists"] * 2
-            if goalie_stats["decision"] == "W":
-                points += 3
-
-            if goals_against == 0:
-                # check time on ice as well, needs to be the entire game
-                # Accounts for cases where the goalie is pulled (delayed penalty)
-                #  by not being quite 60 minutes
-                # TODO: Fix this up, not quite correct, needs to check game length
-                min, seconds = [int(i) for i in goalie_stats["timeOnIce"].split(':')]
-                if (min * 60 + seconds) > 3550:
-                    points += 2
-
-            db.query('''INSERT or REPLACE INTO games_draftkings_points
-                     (gamePk,
-                      playerId,
-                      points) VALUES(?,?,?)''', (gamePk, playerId, points))
-
-        except Exception as e:
-            logging.error("Could not insert the following goalie points for DraftKings:")
-            logging.error(goalie_stats)
-            logging.error("Got the following error:")
-            logging.error(e)
-            # Roll back any change if something goes wrong
-            # db.rollback()
-            # raise e
 
 
 def update_team_stats(db, season):
@@ -317,24 +228,27 @@ def get_implied_probability(american_odds):
         return 100 / (american_odds + 100)
 
 
-def get_game_pk_by_names(db, home_name, visiting_name):
+def get_team_id(db, team_name):
     try:
-        db.query("select t.id from teams t where t.name = ? or t.teamName = ?", (home_name, home_name.split()[1]))
+        db.query("select t.id from teams t where t.name = ? or t.teamName = ?", (team_name, team_name.split()[1]))
         for team in db.fetchall():
-            home_team_id = team['id']
+            return team['id']
 
-        db.query("select t.id from teams t where t.name = ? or t.teamName = ?",
-                 (visiting_name, visiting_name.split()[1]))
-        for team in db.fetchall():
-            away_team_id = team['id']
+    except Exception as e:
+        logging.error("Could not find gamePk for " + team_name)
+        logging.error("Got the following error:")
+        logging.error(e)
+        raise e
 
+def get_game_pk_by_ids(db, home_team_id, away_team_id):
+    try:
         # Find the latest gamePk with the given team names
         db.query("select g.gamePk from games g where homeTeamId = ? and awayTeamId = ? order by gamePk desc", (home_team_id, away_team_id))
         for game in db.fetchall():
             return game['gamePk']
 
     except Exception as e:
-        logging.error("Could not find gamePk for " + home_name + ", " + visiting_name)
+        logging.error("Could not find gamePk for " + str(home_team_id) + ", " + str(away_team_id))
         logging.error("Got the following error:")
         logging.error(e)
         raise e
@@ -405,17 +319,21 @@ def update_games_vegas_odds(db):
         logging.debug(over_adjust)
         logging.debug(under_adjust)
 
-        gamePk = get_game_pk_by_names(db, home_name, visiting_name)
+        home_team_id = get_team_id(db, home_name)
+        away_team_id = get_team_id(db, visiting_name)
+        gamePk = get_game_pk_by_ids(db, home_team_id, away_team_id)
 
         db.query('''insert or replace into games_vegas_odds
                  (gamePk,
                   homeMoneyline,
-                  visitingMoneyline,
+                  awayMoneyline,
+                  homeTeamId,
                   homeProbability,
-                  visitingProbability,
-                  totalPoints,
-                  updatedOn) VALUES(?,?,?,?,?,?,?)''',
-                 (gamePk, home_moneyline, visiting_moneyline, home_p, visiting_p, total_points,
+                  awayTeamId,
+                  awayProbability,
+                  numberOfGoals,
+                  updatedOn) VALUES(?,?,?,?,?,?,?,?,?)''',
+                 (gamePk, home_moneyline, visiting_moneyline, home_team_id, home_p, away_team_id, visiting_p, total_points,
                   datetime.datetime.today()))
 
 
@@ -568,6 +486,13 @@ def get_expected_goalie_stats(db, playerGame):
 
     return goalie_stats
 
+def get_average_goals_against_for_league(db):
+
+    # Get average goals against
+    goals_against_average = 0
+    db.query("select avg(ts.goalsAgainstPerGame) goals_against_percentage_average from team_stats ts")
+    for team_stats in db.fetchall():
+        return team_stats['goals_against_percentage_average']
 
 def update_expected_stats(db, force_update=False):
     try:
@@ -587,9 +512,42 @@ def update_expected_stats(db, force_update=False):
                 if playerGame.get_primary_position() == "G":
                     goals = goalie_stats['goals']
                     assists = goalie_stats['assists']
+
+                    # Get vegas odds to see how likely a win is for goalies
+                    # TODO: add to this to find expected number of goals and goals against
+                    db.query('''select gvo.homeTeamId,
+                                       gvo.homeProbability,
+                                       gvo.awayTeamId,
+                                       gvo.awayProbability,
+                                       gvo.numberOfGoals
+                                 from games_vegas_odds gvo
+                                 where gvo.gamePk = ?''', (playerGame.get_game_pk(),))
+
+                    for game_odds in db.fetchall():
+                        if game_odds['homeTeamId'] == playerGame.get_current_team_id():
+                            goalie_stats['wins'] = game_odds['homeProbability']
+                        elif game_odds['awayTeamId'] == playerGame.get_current_team_id():
+                            goalie_stats['wins'] = game_odds['awayProbability']
+                        else:
+                            raise ValueError("Neither team matched for the given gamePk.")
+
                 else:
                     goals = skater_stats['goals']
                     assists = skater_stats['assists']
+
+                    # Adjust stats based on opponent
+                    average_goals_against_for_league = get_average_goals_against_for_league(db)
+                    # Get opponent goals against
+                    db.query('''select ts.goalsAgainstPerGame,
+                                       ts.goalsForPerGame,
+                                       ts.shotsForPerGame
+                                 from team_stats ts
+                                 where ts.teamId = ?''', (playerGame.get_opponent_id(),))
+
+                    for opponent_stats in db.fetchall():
+                        goals_against_percentage = opponent_stats['goalsAgainstPerGame'] / average_goals_against_for_league
+                        goals *= goals_against_percentage
+                        assists *= goals_against_percentage
 
                 expectedStatsList = [playerGame.get_player_id(),
                                      playerGame.get_game_pk(),

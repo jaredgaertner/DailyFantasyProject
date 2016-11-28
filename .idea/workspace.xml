@@ -1,27 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/daily_fantasy_hockey/update_game_info.py" description="    # c.execute(&quot;SELECT EXISTS(SELECT 1 FROM playe..." line="452" />
+    <bookmark url="file://$PROJECT_DIR$/daily_fantasy_hockey/update_game_info.py" description="    # c.execute(&quot;SELECT EXISTS(SELECT 1 FROM playe..." line="427" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6ee810e2-4e20-4388-9fd4-7476674dac01" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/calculate_lineups.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/main.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/calculate_sets_of_players.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/daily_fantasy_hockey_db.sqlite" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/entry_builder.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/lineup_builder.py" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/lineup_statistics.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/calculate_statistics.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/load_game_data.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/update_game_info.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/sql/daily_fantasy_hockey_db.sqlite" afterPath="$PROJECT_DIR$/resources/sql/daily_fantasy_hockey_db.sqlite" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/DailyFantasyProject.iml" afterPath="$PROJECT_DIR$/.idea/DailyFantasyProject.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/entry.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/entry.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/knapsack.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/knapsack.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/lineup.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/lineup.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/player.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/player.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/calculate_expected_values.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/calculate_expected_values.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/calculate_lineups.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/calculate_lineups.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/player_draftkings_info.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/player_draftkings_info.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/player_game.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/player_game.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/daily_fantasy_hockey/update_game_info.py" afterPath="$PROJECT_DIR$/daily_fantasy_hockey/update_game_info.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/sql/daily_fantasy_hockey_db.sqlite.sqbpro" afterPath="$PROJECT_DIR$/resources/sql/daily_fantasy_hockey_db.sqlite.sqbpro" />
     </list>
     <ignored path="DailyFantasyProject.iws" />
@@ -45,43 +37,11 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="34" column="47" selection-start-line="34" selection-start-column="47" selection-end-line="34" selection-end-column="47" />
+            <state relative-caret-position="215">
+              <caret line="38" column="33" selection-start-line="38" selection-start-column="33" selection-end-line="38" selection-end-column="33" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="player_draftkings_info.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/player_draftkings_info.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="578">
-              <caret line="211" column="87" selection-start-line="211" selection-start-column="87" selection-end-line="211" selection-end-column="87" />
-              <folding>
-                <element signature="e#0#14#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="calculate_lineups.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/calculate_lineups.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="202" column="121" selection-start-line="202" selection-start-column="121" selection-end-line="202" selection-end-column="121" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DKSalaries_11NOV2016.csv" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/resources/DKSalaries_11NOV2016.csv">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="228">
-              <caret line="206" column="12" selection-start-line="206" selection-start-column="12" selection-end-line="206" selection-end-column="38" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -134,22 +94,24 @@
         <option value="$PROJECT_DIR$/daily_fantasy_hockey/lineup.py" />
         <option value="$PROJECT_DIR$/daily_fantasy_hockey/entry.py" />
         <option value="$PROJECT_DIR$/resources/lineups/DKEntries_20161110-021211.csv" />
-        <option value="$PROJECT_DIR$/daily_fantasy_hockey/update_game_info.py" />
         <option value="$PROJECT_DIR$/resources/lineups/DKEntries_20161110-044527.csv" />
         <option value="$PROJECT_DIR$/resources/lineups/DKLineup_20161110-050527.csv" />
         <option value="$PROJECT_DIR$/daily_fantasy_hockey/calculate_statistics.py" />
         <option value="$PROJECT_DIR$/resources/logs/main.log.20161111-133522" />
-        <option value="$PROJECT_DIR$/daily_fantasy_hockey/player_draftkings_info.py" />
         <option value="$PROJECT_DIR$/daily_fantasy_hockey/main.py" />
         <option value="$PROJECT_DIR$/daily_fantasy_hockey/calculate_lineups.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/update_game_info.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/player_draftkings_info.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/calculate_expected_values.py" />
+        <option value="$PROJECT_DIR$/daily_fantasy_hockey/player_game.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1176" />
+    <option name="width" value="1382" />
+    <option name="height" value="744" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -193,7 +155,6 @@
     </navigator>
     <panes>
       <pane id="Scratches" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -222,80 +183,13 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="resources" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DailyFantasyProject" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DailyFantasyProject" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="resources" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sql" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DailyFantasyProject" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DailyFantasyProject" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="resources" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="logs" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DailyFantasyProject" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DailyFantasyProject" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="resources" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="lineups" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DailyFantasyProject" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DailyFantasyProject" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="daily_fantasy_hockey" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -580,7 +474,14 @@
       <option name="project" value="LOCAL" />
       <updated>1478740038634</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Adding in calculations for expected stats and using to calculate value for the player.">
+      <created>1479531478070</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1479531478070</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TodoView">
@@ -593,15 +494,17 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1176" extended-state="6" />
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16770834" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33438486" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15885799" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33438486" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.23639774" sideWeight="0.50208336" order="8" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.19981238" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection Results" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.28548896" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32739213" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.19873817" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3292683" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30393997" sideWeight="0.49791667" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30283913" sideWeight="0.49791667" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18155198" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -612,7 +515,6 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32739213" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -648,7 +550,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Switching to knapsack version.  Adding more information to database (saving player information, rather than calling from csv file every time).  Switching player structure from list to dictionary.  Working on adding opponent information to values.  Adding in lineup statistics, which can be used to keep track of lineups and calculate actual lineup totals the day after." />
     <MESSAGE value="Switching most data to python classes and splitting out into separate files.  Adding entry system, for adjusting lineups after submitting." />
-    <option name="LAST_COMMIT_MESSAGE" value="Switching most data to python classes and splitting out into separate files.  Adding entry system, for adjusting lineups after submitting." />
+    <MESSAGE value="Adding in calculations for expected stats and using to calculate value for the player." />
+    <option name="LAST_COMMIT_MESSAGE" value="Adding in calculations for expected stats and using to calculate value for the player." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -669,9 +572,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161108-133847.csv" />
-    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161109-034403.csv" />
-    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161109-034636.csv" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161109-040439.csv" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161109-040704.csv" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161109-040809.csv" />
@@ -697,21 +597,13 @@
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-162514.csv" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-162857.csv" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161109-163142.csv" />
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python35/Lib/logging/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="1036" column="0" selection-start-line="1036" selection-start-column="0" selection-end-line="1036" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python35/Lib/logging/__init__.py" />
     <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/lineup_builder.py" />
     <entry file="file://$PROJECT_DIR$/resources/logs/lineup_builder.log.20161110-013536" />
     <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/player.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-17">
           <caret line="60" column="33" selection-start-line="60" selection-start-column="33" selection-end-line="60" selection-end-column="33" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -739,13 +631,7 @@
     <entry file="file://$PROJECT_DIR$/resources/logs/lineup_statistics.log.20161110-013536" />
     <entry file="file://$PROJECT_DIR$/resources/logs/lineup_statistics.log.20161110-013726" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161110-021211.csv" />
-    <entry file="file://$PROJECT_DIR$/resources/logs/main.log.20161110-021211">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="3822" column="151" selection-start-line="3822" selection-start-column="141" selection-end-line="3822" selection-end-column="151" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/logs/main.log.20161110-021211" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161110-044527.csv" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161109-041512.csv">
       <provider selected="true" editor-type-id="text-editor">
@@ -758,21 +644,8 @@
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161110-160813.csv" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161110-160541.csv" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161110-155948.csv" />
-    <entry file="file://$PROJECT_DIR$/resources/DKSalaries_10NOV2016.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="112" column="33" selection-start-line="112" selection-start-column="13" selection-end-line="112" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/DKSalaries_10NOV2016.csv" />
     <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161110-161209.csv" />
-    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/database.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/calculate_statistics.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="493">
@@ -787,92 +660,67 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161110-164254.csv">
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKEntries_20161110-164254.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161110-163633.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161110-164254.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161110-164652.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161110-164535.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/DKEntries_10NOV2016.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161111-133337.csv" />
+    <entry file="file://$PROJECT_DIR$/resources/logs/main.log.20161111-133522" />
+    <entry file="file://$PROJECT_DIR$/resources/DKSalaries_11NOV2016.csv" />
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/database.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161110-163633.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161110-164254.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161110-164652.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/lineups/DKAllLineups_20161110-164535.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/DKEntries_10NOV2016.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="32" column="40" selection-start-line="32" selection-start-column="17" selection-end-line="32" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161111-133337.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="-124">
+          <caret line="28" column="0" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/update_game_info.py">
+    <entry file="file://$PROJECT_DIR$/resources/lineups/DKLineup_20161119-204506.csv">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="854" column="57" selection-start-line="854" selection-start-column="57" selection-end-line="854" selection-end-column="57" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/logs/main.log.20161111-133522">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="173">
-          <caret line="1023" column="18" selection-start-line="1023" selection-start-column="18" selection-end-line="1023" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/DKSalaries_11NOV2016.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="206" column="12" selection-start-line="206" selection-start-column="12" selection-end-line="206" selection-end-column="38" />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/calculate_lineups.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="202" column="121" selection-start-line="202" selection-start-column="121" selection-end-line="202" selection-end-column="121" />
+        <state relative-caret-position="3389">
+          <caret line="328" column="42" selection-start-line="328" selection-start-column="42" selection-end-line="328" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/player_game.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="131">
+          <caret line="73" column="14" selection-start-line="73" selection-start-column="14" selection-end-line="73" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/update_game_info.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="131">
+          <caret line="102" column="6" selection-start-line="102" selection-start-column="6" selection-end-line="102" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/calculate_expected_values.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="138">
+          <caret line="516" column="22" selection-start-line="516" selection-start-column="22" selection-end-line="516" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/player_draftkings_info.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="578">
-          <caret line="211" column="87" selection-start-line="211" selection-start-column="87" selection-end-line="211" selection-end-column="87" />
+        <state relative-caret-position="3332">
+          <caret line="196" column="33" selection-start-line="196" selection-start-column="33" selection-end-line="196" selection-end-column="33" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
@@ -881,8 +729,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/daily_fantasy_hockey/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="34" column="47" selection-start-line="34" selection-start-column="47" selection-end-line="34" selection-end-column="47" />
+        <state relative-caret-position="215">
+          <caret line="38" column="33" selection-start-line="38" selection-start-column="33" selection-end-line="38" selection-end-column="33" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
