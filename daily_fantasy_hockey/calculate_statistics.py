@@ -52,7 +52,7 @@ def get_lineup_value(db, lineup, gamePkStart, gamePkEnd):
 
 
 def update_lineup_values(db):
-    logging.debug("Finding actual value for player lineups for DraftKings")
+    logging.info("Finding actual value for player lineups for DraftKings")
     try:
         db.query('''select ddl.id,
                             ddl.centre1,

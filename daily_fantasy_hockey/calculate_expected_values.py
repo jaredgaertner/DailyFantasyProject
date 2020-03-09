@@ -7,6 +7,7 @@ import logging
 from database import database
 from bs4 import BeautifulSoup
 from player_game import PlayerGame
+import requests
 
 __author__ = "jaredg"
 
@@ -27,7 +28,7 @@ def drop_tables(db):
 
 def create_team_stats(db):
     # Create team stats table
-    # Based on NHL API: http://www.nhl.com/stats/rest/grouped/team/basic/season/teamsummary?cayenneExp=seasonId=20162017%20and%20gameTypeId=2
+    # Based on NHL API: https://statsapi.web.nhl.com/api/v1/grouped/team/basic/season/teamsummary?cayenneExp=seasonId=20162017%20and%20gameTypeId=2
     db.query('''CREATE TABLE team_stats
                  (teamId number primary key,
                   seasonId number,
@@ -104,7 +105,7 @@ def create_tables(db):
     create_player_line_combinations(db)
 
     # Create team stats table
-    # Based on NHL API: http://www.nhl.com/stats/rest/grouped/team/basic/season/teamsummary?cayenneExp=seasonId=20162017%20and%20gameTypeId=2
+    # Based on NHL API: https://statsapi.web.nhl.com/api/v1/grouped/team/basic/season/teamsummary?cayenneExp=seasonId=20162017%20and%20gameTypeId=2
     create_team_stats(db)
 
     create_games_vegas_odds(db)
@@ -114,20 +115,21 @@ def create_tables(db):
 
 def update_team_stats(db, season):
     # Create team data
-    url = "http://www.nhl.com/stats/rest/grouped/team/basic/season/teamsummary?cayenneExp=seasonId=" + season + "%20and%20gameTypeId=2"
+    url = "https://statsapi.web.nhl.com/api/v1/teams?expand=team.stats&season=" + season
     response = urllib.request.urlopen(url).read()
     data = json.loads(response.decode())
 
-    for team_stat in data['data']:
+    for team_data in data['teams']:
+        team_stat = team_data['teamStats'][0]['splits'][0]['stat']
         try:
             db.query(
                 '''INSERT or REPLACE INTO team_stats(teamId, seasonId, gamesPlayed, wins, ties, losses, otLosses, points, regPlusOtWins, pointPctg, goalsFor, goalsAgainst, goalsForPerGame, goalsAgainstPerGame, ppPctg, pkPctg, shotsForPerGame, shotsAgainstPerGame, faceoffWinPctg) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
-                [team_stat['teamId'], team_stat['seasonId'], team_stat['gamesPlayed'], team_stat['wins'],
-                 team_stat['ties'], team_stat['losses'], team_stat['otLosses'], team_stat['points'],
-                 team_stat['regPlusOtWins'], team_stat['pointPctg'], team_stat['goalsFor'], team_stat['goalsAgainst'],
-                 team_stat['goalsForPerGame'], team_stat['goalsAgainstPerGame'], team_stat['ppPctg'],
-                 team_stat['pkPctg'], team_stat['shotsForPerGame'], team_stat['shotsAgainstPerGame'],
-                 team_stat['faceoffWinPctg']])
+                [team_data['id'], season, team_stat['gamesPlayed'], team_stat['wins'],
+                 -1, team_stat['losses'], -1, team_stat['pts'],
+                 -1, team_stat['ptPctg'], -1, -1,
+                 team_stat['goalsPerGame'], team_stat['goalsAgainstPerGame'], team_stat['powerPlayPercentage'],
+                 team_stat['penaltyKillPercentage'], team_stat['shotsPerGame'], team_stat['shotsAllowed'],
+                 team_stat['faceOffWinPercentage']])
 
         except Exception as e:
             logging.error("Could not insert the following team stats:")
@@ -146,9 +148,11 @@ def get_player_id_by_name(db, playerName):
             return player['id']
 
         # Couldn't find the player, try their last name only
-        db.query("select p.id from players p where lower(p.lastName) = lower(?)", (playerName.split()[1],))
+        db.query("select p.id from players p where lower(p.lastName) = lower(?)", (playerName.split(' ', 1)[1],))
         for player in db.fetchall():
             return player['id']
+
+        logging.error("Could not find player ID for " + playerName)
 
     except Exception as e:
         logging.error("Could not find player ID for " + playerName)
@@ -185,30 +189,32 @@ def update_line_combinations(db, force_update=False):
             logging.info("Skipping updating lineup combinations, recently updated....")
         else:
             logging.info("Finding line combinations...")
-            url = "http://www2.dailyfaceoff.com/teams"
-            soup = BeautifulSoup(urllib.request.urlopen(url).read(), "lxml")
-            teams = soup.find(id="matchups_container")
-            for team in teams.find_all("a"):
+            url = "https://www.dailyfaceoff.com/teams/"
+            headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+            response = requests.get(url, headers=headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            teams = soup.find_all("a", class_="team-logo-img")
+            for team in teams:
                 url = team.get("href")
-                if url.startswith("/teams"):
-                    url = "http://www2.dailyfaceoff.com" + team.get("href")
-                    soup = BeautifulSoup(urllib.request.urlopen(url).read(), "html.parser")
-                    lineups = soup.find(id="matchups_container")
-                    for td in lineups.find_all("td"):
-                        logging.debug(td)
-                        # Going to ignore powerplay lineups for now
-                        position = td.get("id")
-                        logging.debug(position)
-                        if position.startswith(("C", "LW", "RW", "LD", "RD", "G", "IR")) and td.a != None:
-                            playerName = td.a.img.get("alt")
-                            logging.info("Setting " + str(playerName) + " to " + position)
-                            playerId = get_player_id_by_name(db, playerName)
-                            db.query('''INSERT or REPLACE INTO player_line_combinations
-                                     (playerId,
-                                      lineInfo,
-                                      updatedOn) VALUES(?,?,?)''', (playerId, position, datetime.datetime.today()))
-                        else:
-                            logging.debug("ignoring..." + str(position))
+                headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+                response = requests.get(url, headers=headers)
+                soup = BeautifulSoup(response.text, "html.parser")
+                lineups = soup.find(class_="team-line-combination-wrap")
+                for td in lineups.find_all("td"):
+                    logging.debug(td)
+                    # Going to ignore powerplay lineups for now
+                    position = td.get("id")
+                    logging.debug(position)
+                    if position is not None and position.startswith(("C", "LW", "RW", "LD", "RD", "G", "IR")) and td.a != None:
+                        playerName = td.a.img.get("alt")
+                        logging.info("Setting " + str(playerName) + " to " + position)
+                        playerId = get_player_id_by_name(db, playerName)
+                        db.query('''INSERT or REPLACE INTO player_line_combinations
+                                 (playerId,
+                                  lineInfo,
+                                  updatedOn) VALUES(?,?,?)''', (playerId, position, datetime.datetime.today()))
+                    else:
+                        logging.debug("ignoring..." + str(position))
 
 
     except Exception as e:
@@ -337,7 +343,7 @@ def update_games_vegas_odds(db):
                   datetime.datetime.today()))
 
 
-def get_expected_skater_stats(db, playerGame):
+def get_expected_skater_stats(db, playerGame, season):
     skater_stats = {"goals": 0,
                     "assists": 0,
                     "shots_on_goal": 0,
@@ -350,38 +356,44 @@ def get_expected_skater_stats(db, playerGame):
         return skater_stats
 
     playerId = playerGame.get_player_id()
+    this_year = season[0:4]
+    last_year = str(int(this_year) - 1)  # Need to minus one, as the gamePk is the starting year (i.e 2019 for 2019/2020)
     try:
         logging.debug("Getting player value for " + str(playerId))
         # Find average points for last week and for the year
-        db.query('''select ifnull(avg(case when g.gamePk like '2015%' then pgss.goals else null end),0) AS average_goals_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then pgss.goals else null end),0) AS average_goals_this_year,
+        query_string = '''select ifnull(avg(case when g.gamePk like 'LAST%' then pgss.goals else null end),0) AS average_goals_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then pgss.goals else null end),0) AS average_goals_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then pgss.goals else null end),0) AS average_goals_last_two_weeks,
-                           ifnull(avg(case when g.gamePk like '2015%' then pgss.assists else null end),0) AS average_assists_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then pgss.assists else null end),0) AS average_assists_this_year,
+                           ifnull(avg(case when g.gamePk like 'LAST%' then pgss.assists else null end),0) AS average_assists_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then pgss.assists else null end),0) AS average_assists_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then pgss.assists else null end),0) AS average_assists_last_two_weeks,
-                           ifnull(avg(case when g.gamePk like '2015%' then pgss.shots else null end),0) AS average_shots_on_goal_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then pgss.shots else null end),0) AS average_shots_on_goal_this_year,
+                           ifnull(avg(case when g.gamePk like 'LAST%' then pgss.shots else null end),0) AS average_shots_on_goal_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then pgss.shots else null end),0) AS average_shots_on_goal_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then pgss.shots else null end),0) AS average_shots_on_goal_last_two_weeks,
-                           ifnull(avg(case when g.gamePk like '2015%' then pgss.blocked else null end),0) AS average_blocked_shots_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then pgss.blocked else null end),0) AS average_blocked_shots_this_year,
+                           ifnull(avg(case when g.gamePk like 'LAST%' then pgss.blocked else null end),0) AS average_blocked_shots_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then pgss.blocked else null end),0) AS average_blocked_shots_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then pgss.blocked else null end),0) AS average_blocked_shots_last_two_weeks,
-                           ifnull(avg(case when g.gamePk like '2015%' then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_short_handed_points_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_short_handed_points_this_year,
+                           ifnull(avg(case when g.gamePk like 'LAST%' then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_short_handed_points_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_short_handed_points_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then pgss.shortHandedGoals + pgss.shortHandedAssists else null end),0) AS average_short_handed_points_last_two_weeks,
                            0 average_shootout_goals_last_year,
                            0 average_shootout_goals_this_year,
                            0 average_shootout_goals_last_two_weeks,
-                           ifnull(avg(case when g.gamePk like '2015%' then (case when pgss.goals >= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then (case when pgss.goals >= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_this_year,
+                           ifnull(avg(case when g.gamePk like 'LAST%' then (case when pgss.goals >= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then (case when pgss.goals >= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then (case when pgss.goals >= 3 then 1 else 0 end) else null end),0) AS average_hat_tricks_last_two_weeks,
-                           count(case when g.gamePk like '2015%' then 1 else null end) as games_last_year,
-                           count(case when g.gamePk like '2016%' then 1 else null end) as games_this_year,
+                           count(case when g.gamePk like 'LAST%' then 1 else null end) as games_last_year,
+                           count(case when g.gamePk like 'THIS%' then 1 else null end) as games_this_year,
                            count(case when g.gameDate > date('now','-14 day') then 1 else null end) AS games_last_two_weeks
                     from player_games_skater_stats pgss
                     inner join games g
                     on pgss.gamePk = g.gamePk
                     where playerId = ? and
-                          (g.gamePk like '2016%' or g.gamePk like '2015%')''', (playerId,))
+                          (g.gamePk like 'THIS%' or g.gamePk like 'LAST%')'''
+        query_string = query_string.replace("LAST", last_year)
+        query_string = query_string.replace("THIS", this_year)
+        logging.debug(query_string)
+        db.query(query_string, (playerId,))
         value = 0
         for player_stats in db.fetchall():
             # Calculate value (ignore players that haven't played a game this year)
@@ -413,7 +425,7 @@ def get_expected_skater_stats(db, playerGame):
         raise e
 
 
-def get_expected_goalie_stats(db, playerGame):
+def get_expected_goalie_stats(db, playerGame, season):
     goalie_stats = {"wins": 0,
                     "saves": 0,
                     "goals_against": 0,
@@ -425,35 +437,41 @@ def get_expected_goalie_stats(db, playerGame):
         return goalie_stats
 
     playerId = playerGame.get_player_id()
+    this_year = season[0:4]
+    last_year = str(int(this_year) - 1)  # Need to minus one, as the gamePk is the starting year (i.e 2019 for 2019/2020)
     try:
         logging.debug("Getting player value for " + str(playerId))
         # Find average points for last week and for the year
-        db.query('''select ifnull(avg(case when g.gamePk like '2015%' then (case when pggs.decision = "W" then 1 else 0 end) else null end),0) AS average_wins_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then (case when pggs.decision = "W" then 1 else 0 end) else null end),0) AS average_wins_this_year,
+        query_string = '''select ifnull(avg(case when g.gamePk like 'LAST%' then (case when pggs.decision = "W" then 1 else 0 end) else null end),0) AS average_wins_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then (case when pggs.decision = "W" then 1 else 0 end) else null end),0) AS average_wins_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then (case when pggs.decision = "W" then 1 else 0 end) else null end),0) AS average_wins_last_two_weeks,
-                           ifnull(avg(case when g.gamePk like '2015%' then pggs.saves else null end),0) AS average_saves_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then pggs.saves else null end),0) AS average_saves_this_year,
+                           ifnull(avg(case when g.gamePk like 'LAST%' then pggs.saves else null end),0) AS average_saves_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then pggs.saves else null end),0) AS average_saves_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then pggs.saves else null end),0) AS average_saves_last_two_weeks,
-                           ifnull(avg(case when g.gamePk like '2015%' then pggs.shots - pggs.saves else null end),0) AS average_goals_against_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then pggs.shots - pggs.saves else null end),0) AS average_goals_against_this_year,
+                           ifnull(avg(case when g.gamePk like 'LAST%' then pggs.shots - pggs.saves else null end),0) AS average_goals_against_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then pggs.shots - pggs.saves else null end),0) AS average_goals_against_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then pggs.shots - pggs.saves else null end),0) AS average_goals_against_last_two_weeks,
-                           ifnull(avg(case when g.gamePk like '2015%' then (case when pggs.decision = "W" and pggs.shots = pggs.saves and pggs.timeOnIce > "59:30" then 1 else 0 end) else null end),0) AS average_shutouts_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then (case when pggs.decision = "W" and pggs.shots = pggs.saves and pggs.timeOnIce > "59:30" then 1 else 0 end) else null end),0) AS average_shutouts_this_year,
+                           ifnull(avg(case when g.gamePk like 'LAST%' then (case when pggs.decision = "W" and pggs.shots = pggs.saves and pggs.timeOnIce > "59:30" then 1 else 0 end) else null end),0) AS average_shutouts_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then (case when pggs.decision = "W" and pggs.shots = pggs.saves and pggs.timeOnIce > "59:30" then 1 else 0 end) else null end),0) AS average_shutouts_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then (case when pggs.decision = "W" and pggs.shots = pggs.saves and pggs.timeOnIce > "59:30" then 1 else 0 end) else null end),0) AS average_shutouts_last_two_weeks,
-                           ifnull(avg(case when g.gamePk like '2015%' then pggs.goals else null end),0) AS average_goals_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then pggs.goals else null end),0) AS average_goals_this_year,
+                           ifnull(avg(case when g.gamePk like 'LAST%' then pggs.goals else null end),0) AS average_goals_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then pggs.goals else null end),0) AS average_goals_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then pggs.goals else null end),0) AS average_goals_last_two_weeks,
-                           ifnull(avg(case when g.gamePk like '2015%' then pggs.assists else null end),0) AS average_assists_last_year,
-                           ifnull(avg(case when g.gamePk like '2016%' then pggs.assists else null end),0) AS average_assists_this_year,
+                           ifnull(avg(case when g.gamePk like 'LAST%' then pggs.assists else null end),0) AS average_assists_last_year,
+                           ifnull(avg(case when g.gamePk like 'THIS%' then pggs.assists else null end),0) AS average_assists_this_year,
                            ifnull(avg(case when g.gameDate > date('now','-14 day') then pggs.assists else null end),0) AS average_assists_last_two_weeks,
-                           count(case when g.gamePk like '2015%' then 1 else null end) as games_last_year,
-                           count(case when g.gamePk like '2016%' then 1 else null end) as games_this_year,
+                           count(case when g.gamePk like 'LAST%' then 1 else null end) as games_last_year,
+                           count(case when g.gamePk like 'THIS%' then 1 else null end) as games_this_year,
                            count(case when g.gameDate > date('now','-14 day') then 1 else null end) AS games_last_two_weeks
                     from player_games_goalie_stats pggs
                     inner join games g
                     on pggs.gamePk = g.gamePk
                     where pggs.playerId = ? and
-                          (g.gamePk like '2016%' or g.gamePk like '2015%')''', (playerId,))
+                          (g.gamePk like 'THIS%' or g.gamePk like 'LAST%')'''
+        query_string = query_string.replace("LAST", last_year)
+        query_string = query_string.replace("THIS", this_year)
+        logging.debug(query_string)
+        db.query(query_string, (playerId,))
         value = 0
         for player_stats in db.fetchall():
             # Calculate value (ignore players that haven't played a game this year)
@@ -494,7 +512,7 @@ def get_average_goals_against_for_league(db):
     for team_stats in db.fetchall():
         return team_stats['goals_against_percentage_average']
 
-def update_expected_stats(db, force_update=False):
+def update_expected_stats(db, force_update=False, season="20192020"):
     try:
         # Check if we've updated in the last 12 hours
         twelve_hours_ago = datetime.datetime.today() - datetime.timedelta(hours=12)
@@ -506,8 +524,8 @@ def update_expected_stats(db, force_update=False):
             active_players = get_all_active_player_ids(db)
             for active_player_id in active_players:
                 playerGame = PlayerGame(db, active_player_id)
-                skater_stats = get_expected_skater_stats(db, playerGame)
-                goalie_stats = get_expected_goalie_stats(db, playerGame)
+                skater_stats = get_expected_skater_stats(db, playerGame, season)
+                goalie_stats = get_expected_goalie_stats(db, playerGame, season)
 
                 if playerGame.get_primary_position() == "G":
                     goals = goalie_stats['goals']
@@ -590,16 +608,16 @@ def update_expected_stats(db, force_update=False):
         raise e
 
 
-def calculate_expected_values(db):
+def calculate_expected_values(db, force_update, season):
     # Update team stats
-    update_team_stats(db, "20162017")
+    update_team_stats(db, season)
 
     # Update line combinations
-    update_line_combinations(db)
+    update_line_combinations(db, force_update)
 
     # Update vegas lines
-    update_games_vegas_odds(db)
+    # update_games_vegas_odds(db)
 
-    update_expected_stats(db, True)
+    update_expected_stats(db, force_update, season)
 
     db.commit()

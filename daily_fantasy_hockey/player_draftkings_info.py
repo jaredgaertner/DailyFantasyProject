@@ -225,10 +225,10 @@ class PlayerDraftKingsInfo(PlayerGame):
                                order by gamePk desc''', (self._playerId, ))#self._gamePk,))
 
             for stats in self._db.fetchall():
-                return 3 * stats['goals'] + 2 * stats['assists'] + 0.5 * stats['shotsOnGoal'] + 0.5 * stats[
-                    'blockedShots'] + 1 * stats['shortHandedPoints'] + 0.2 * stats['shootoutGoals'] + 1.5 * stats[
-                    'hatTricks'] + 3 * stats['wins'] + 0.2 * stats['saves'] - 1 * stats['goalsAgainst'] + 2 * stats[
-                    'shutouts']
+                return 8.5 * stats['goals'] + 5 * stats['assists'] + 1.5 * stats['shotsOnGoal'] + 1.3 * stats[
+                    'blockedShots'] + 2 * stats['shortHandedPoints'] + 1.5 * stats['shootoutGoals'] + 3 * stats[
+                    'hatTricks'] + 6 * stats['wins'] + 0.7 * stats['saves'] - 3.5 * stats['goalsAgainst'] + 4 * stats[
+                    'shutouts'] # Need 5+ shots, 3+ blocked shots, 3+ points, OTL and 35+ saves
 
             # logging.warning("Couldn't find a value for " + str(self._playerId))
             return 0

@@ -10,6 +10,7 @@ from lineup import Lineup
 from player_draftkings_info import PlayerDraftKingsInfo
 from knapsack import knapsack, brute_force
 from calculate_expected_values import get_all_active_player_ids
+import requests
 
 __author__ = "jaredg"
 
@@ -30,30 +31,14 @@ def get_starting_goalies(db, date_for_lineup):
     starting_goalies = []
     try:
         logging.info("Finding starting goalies...")
-        url = "http://www2.dailyfaceoff.com/starting-goalies/" + str(date_for_lineup.year) + "/" + str(
-            date_for_lineup.month) + "/" + str(date_for_lineup.day) + "/"
-        soup = BeautifulSoup(urllib.request.urlopen(url).read(), "html.parser")
-        # matchups = soup.find(id="matchups")
-        for row in soup.find_all("div", "goalie"):
-            if row.find("h5") != None:
-                goalie_name = row.h5.a.string
-                logging.info("Goalie name: " + str(goalie_name))
-                status = row.dl.dt.string
-                logging.info("Status: " + str(status))
-
-                starting_goalies.append(goalie_name)
-
-            # Not currently needed, as only shows goalies which aren't confirmed
-            # Else, we need to look at the document.write statement
-            else:
-                match = re.search(r"document\.write\(\"(.+)\"\)", str(row))
-                goalie_info = BeautifulSoup(match.group(1), "html.parser")
-                goalie_name = goalie_info.h5.a.string
-                logging.info("Goalie name: " + str(goalie_name))
-                status = goalie_info.dl.dt.string
-                logging.info("Status: " + str(status))
-                starting_goalies.append(goalie_name)
-
+        url = "https://www.dailyfaceoff.com/starting-goalies/"
+        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
+        for row in soup.find_all(class_="top-card-section"):
+            goalie_name = row.a.h4.string
+            logging.info("Goalie name: " + str(goalie_name))
+            starting_goalies.append(goalie_name)
         return starting_goalies
 
     except Exception as e:
@@ -128,22 +113,17 @@ def get_player_data(db, date_for_lineup):  # , ir_players):
             "Player information for DraftKings doesn't exist, grabbing from csv file: DKSalaries_" + date_for_lineup.strftime(
                 "%d%b%Y").upper() + ".csv")
         with open("../resources/DKSalaries_" + date_for_lineup.strftime("%d%b%Y").upper() + ".csv", "r") as csvfile:
-            # Skip the first 7 lines, as it contains the format for uploading
-            for i in range(7):
-                next(csvfile)
-
             reader = csv.DictReader(csvfile)
             for row in reader:
-                name = row[' Name']
                 # if name not in ir_players:
                 player_info = PlayerDraftKingsInfo(db,
                                                    row['Name + ID'],
-                                                   row[' Name'],
-                                                   row[' ID'],
-                                                   int(int(row[' Salary']) / 100),
+                                                   row['Name'],
+                                                   row['ID'],
+                                                   int(int(row['Salary']) / 100),
                                                    row['Position'],
-                                                   row['GameInfo'],
-                                                   row['TeamAbbrev '],
+                                                   row['Game Info'],
+                                                   row['TeamAbbrev'],
                                                    "Standard",
                                                    date_for_lineup)
                 logging.debug(player_info)
@@ -253,17 +233,13 @@ def calculate_lineups(db, date_for_lineup, number_of_lineups, lineup_type="initi
         # Sort list of players and remove any goalies and players with value less than 1.0 and weight 25 or under, or if not active
         # Choose one Util from the from of the list
         logging.debug("Finding skaters....")
-        skaters = copy.deepcopy(players)
         active_players = get_all_active_player_ids(db)
-        skaters = [item for item in skaters if
+        skaters = [item for item in players if
                    item.get_position() != "G" and
                    item.get_value() > 1.0 and
                    item.get_weight() > 25 and
                    item.get_player_id() != None and
                    item.get_player_id() in active_players]
-        # for skater in skaters:
-        #     logging.info(skater)
-        #     logging.info(skater.get_player_id())
 
         limit = 500
         # for i in range(len(chosen_goalies)):

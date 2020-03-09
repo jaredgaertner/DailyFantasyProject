@@ -804,17 +804,11 @@ def update_game_info(db, update_type = "week_ago"):
     day_ago = datetime.date.today() - datetime.timedelta(days=1)
     three_days_ago = datetime.date.today() - datetime.timedelta(days=3)
     week_ago = datetime.date.today() - datetime.timedelta(days=7)
-    start_of_season = datetime.date(2016, 10, 12)
-    last_season = datetime.date(2015, 10, 1)
 
     if update_type == "day_ago":
         update_as_of = day_ago
     elif update_type == "three_days_ago":
         update_as_of = three_days_ago
-    elif update_type == "start_of_season":
-        update_as_of = start_of_season
-    elif update_type == "last_season":
-        update_as_of = last_season
     else:
         update_as_of = week_ago
 
